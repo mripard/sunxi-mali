@@ -3,6 +3,7 @@
 #include <linux/delay.h>
 #include <linux/dma-mapping.h>
 #include <linux/io.h>
+#include <linux/module.h>
 #include <linux/of_address.h>
 #include <linux/of_device.h>
 #include <linux/of_irq.h>
@@ -93,7 +94,9 @@ static void mali_print_core_version(struct resource *res)
 
 static struct of_device_id mali_dt_ids[] = {
 	{ .compatible = "arm,mali-400" },
+	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, mali_dt_ids);
 
 int mali_platform_device_register(void)
 {
