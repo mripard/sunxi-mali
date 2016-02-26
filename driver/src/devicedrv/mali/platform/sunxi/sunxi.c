@@ -10,6 +10,8 @@
 #include <linux/reset.h>
 #include <linux/slab.h>
 
+#include <linux/clk/clk-conf.h>
+
 #include <linux/mali/mali_utgard.h>
 
 #define MALI_PP_BASE(pp)	0x8000 + 0x2000 * (pp)
@@ -20,8 +22,6 @@
 #define MALI_GP_VERSION_300		0x0c07
 #define MALI_GP_VERSION_400		0x0b07
 #define MALI_GP_VERSION_450		0x0d07
-
-#define MALI_CLK_FREQ		(312 * 1000 * 1000)
 
 struct mali {
 	struct clk		*bus_clk;
@@ -117,6 +117,12 @@ int mali_platform_device_register(void)
 		goto err_put_node;
 	}
 
+	ret = of_clk_set_defaults(np, false);
+	if (ret) {
+		pr_err("Couldn't set clock defaults\n");
+		goto err_free_mem;
+	}
+
 	mali->bus_clk = of_clk_get_by_name(np, "ahb");
 	if (IS_ERR(mali->bus_clk)) {
 		pr_err("Couldn't retrieve our bus clock\n");
@@ -129,12 +135,6 @@ int mali_platform_device_register(void)
 		pr_err("Couldn't retrieve our module clock\n");
 		ret = PTR_ERR(mali->mod_clk);
 		goto err_put_bus;
-	}
-
-	ret = clk_set_rate(mali->mod_clk, MALI_CLK_FREQ);
-	if (ret) {
-		pr_err("Couldn't change the clock rate\n");
-		goto err_put_mod;
 	}
 
 	mali->reset = of_reset_control_get(np, NULL);
