@@ -34,10 +34,10 @@ struct mali {
 
 struct mali *mali = NULL;
 
-struct resource *mali_create_resources(unsigned long address,
-				       int irq_gp, int irq_gpmmu,
-				       int irq_pp0, int irq_ppmmu0,
-				       int *len)
+struct resource *mali_create_mp1_resources(unsigned long address,
+					   int irq_gp, int irq_gpmmu,
+					   int irq_pp0, int irq_ppmmu0,
+					   int *len)
 {
 	struct resource target[] = {
 		MALI_GPU_RESOURCES_MALI400_MP1_PMU(address,
@@ -57,15 +57,48 @@ struct resource *mali_create_resources(unsigned long address,
 	return res;
 }
 
-static void mali_print_core_version(struct resource *res)
+struct resource *mali_create_mp2_resources(unsigned long address,
+					   int irq_gp, int irq_gpmmu,
+					   int irq_pp0, int irq_ppmmu0,
+					   int irq_pp1, int irq_ppmmu1,
+					   int *len)
 {
-	unsigned int pp_number, gpu_model, major, minor, i;
-	void __iomem *regs;
-	u32 val;
+	struct resource target[] = {
+		MALI_GPU_RESOURCES_MALI400_MP2_PMU(address,
+						   irq_gp, irq_gpmmu,
+						   irq_pp0, irq_ppmmu0,
+						   irq_pp1, irq_ppmmu1)
+	};
+	struct resource *res;
 
-	regs = ioremap(res->start, resource_size(res));
-	if (!regs)
-		return;
+	res = kzalloc(sizeof(target), GFP_KERNEL);
+	if (!res)
+		return NULL;
+
+	memcpy(res, target, sizeof(target));
+
+	*len = ARRAY_SIZE(target);
+
+	return res;
+}
+
+static int mali_get_core_numbers(void __iomem *regs)
+{
+	int i;
+
+	for (i = 0; i < 4; i++) {
+		u32 val = readl(regs + MALI_PP_BASE(i) + MALI_PP_VERSION_REG);
+		if (!val)
+			break;
+	}
+
+	return i;
+}	
+
+static void mali_print_core_version(void __iomem *regs)
+{
+	unsigned int gpu_model, major, minor;
+	u32 val;
 
 	val = readl(regs + MALI_GP_VERSION_REG);
 	minor = val & 0xff;
@@ -81,15 +114,8 @@ static void mali_print_core_version(struct resource *res)
 		return;
 	}
 
-	for (i = 0; i < 4; i++) {
-		val = readl(regs + MALI_PP_BASE(i) + MALI_PP_VERSION_REG);
-		if (!val)
-			break;
-	}
-	pp_number = i;
-
 	pr_info("Found ARM Mali %u MP%d (r%up%u)\n",
-		gpu_model, pp_number, major, minor);
+		gpu_model, mali_get_core_numbers(regs), major, minor);
 };
 
 static struct of_device_id mali_dt_ids[] = {
@@ -100,9 +126,14 @@ MODULE_DEVICE_TABLE(of, mali_dt_ids);
 
 int mali_platform_device_register(void)
 {
-	int irq_gp, irq_gpmmu, irq_pp0, irq_ppmmu0, irq_pmu;
-	struct resource *mali_res, res;
+	int irq_gp, irq_gpmmu;
+	int irq_pp0, irq_ppmmu0;
+	int irq_pp1 = -EINVAL, irq_ppmmu1 = -EINVAL;
+	int irq_pmu;
+	int nr_cores;
+	struct resource *mali_res = NULL, res;
 	struct device_node *np;
+	void __iomem *regs;
 	int ret, len;
 
 	np = of_find_matching_node(NULL, mali_dt_ids);
@@ -129,6 +160,7 @@ int mali_platform_device_register(void)
 		ret = PTR_ERR(mali->bus_clk);
 		goto err_free_mem;
 	}
+	clk_prepare_enable(mali->bus_clk);
 
 	mali->mod_clk = of_clk_get_by_name(np, "mod");
 	if (IS_ERR(mali->mod_clk)) {
@@ -136,6 +168,7 @@ int mali_platform_device_register(void)
 		ret = PTR_ERR(mali->mod_clk);
 		goto err_put_bus;
 	}
+	clk_prepare_enable(mali->mod_clk);
 
 	mali->reset = of_reset_control_get(np, NULL);
 	if (IS_ERR(mali->reset)) {
@@ -143,12 +176,27 @@ int mali_platform_device_register(void)
 		ret = PTR_ERR(mali->reset);
 		goto err_put_mod;
 	}
+	reset_control_deassert(mali->reset);
 
 	ret = of_address_to_resource(np, 0, &res);
 	if (ret) {
 		pr_err("Couldn't retrieve our base address\n");
 		goto err_put_reset;
 	}
+
+	regs = ioremap(res.start, resource_size(&res));
+	if (!regs) {
+		pr_err("Couldn't map our base address\n");
+		goto err_put_reset;
+	}
+
+	nr_cores = mali_get_core_numbers(regs);
+	if ((nr_cores < 1) || (nr_cores > 2)) {
+		pr_err("Invalid number of GPU cores %d\n", nr_cores);
+		goto err_put_reset;
+	}
+
+	printk("Number of cores %d\n", nr_cores);
 
 	irq_gp = of_irq_get_byname(np, "IRQGP");
 	if (irq_gp < 0) {
@@ -166,7 +214,7 @@ int mali_platform_device_register(void)
 
 	irq_pp0 = of_irq_get_byname(np, "IRQPP0");
 	if (irq_pp0 < 0) {
-		pr_err("Couldn't retrieve our PP0 interrupt\n");
+		pr_err("Couldn't retrieve our PP0 interrupt %d\n", irq_pp0);
 		ret = irq_pp0;
 		goto err_put_reset;
 	}
@@ -176,6 +224,22 @@ int mali_platform_device_register(void)
 		pr_err("Couldn't retrieve our PP0 MMU interrupt\n");
 		ret = irq_ppmmu0;
 		goto err_put_reset;
+	}
+
+	if (nr_cores >= 2) {
+		irq_pp1 = of_irq_get_byname(np, "IRQPP1");
+		if (irq_pp1 < 0) {
+			pr_err("Couldn't retrieve our PP1 interrupt\n");
+			ret = irq_pp1;
+			goto err_put_reset;
+		}
+
+		irq_ppmmu1 = of_irq_get_byname(np, "IRQPPMMU1");
+		if (irq_ppmmu1 < 0) {
+			pr_err("Couldn't retrieve our PP1 MMU interrupt\n");
+			ret = irq_ppmmu1;
+			goto err_put_reset;
+		}
 	}
 
 	irq_pmu = of_irq_get_byname(np, "IRQPMU");
@@ -194,10 +258,20 @@ int mali_platform_device_register(void)
 	mali->dev->dev.dma_mask = &mali->dev->dev.coherent_dma_mask;
 	mali->dev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
 
-	mali_res = mali_create_resources(res.start,
-					 irq_gp, irq_gpmmu,
-					 irq_pp0, irq_ppmmu0,
-					 &len);
+	if (nr_cores == 1)
+		mali_res = mali_create_mp1_resources(res.start,
+						     irq_gp, irq_gpmmu,
+						     irq_pp0, irq_ppmmu0,
+						     &len);
+	else if (nr_cores == 2)
+		mali_res = mali_create_mp2_resources(res.start,
+						     irq_gp, irq_gpmmu,
+						     irq_pp0, irq_ppmmu0,
+						     irq_pp1, irq_ppmmu1,
+						     &len);
+	else
+		mali_res = NULL;
+
 	if (!mali_res) {
 		pr_err("Couldn't create target resources\n");
 		ret = -EINVAL;
@@ -210,14 +284,7 @@ int mali_platform_device_register(void)
 		goto err_free_resources;
 	}
 
-	/* Before going live, enable our clocks and reset lines */
-	reset_control_deassert(mali->reset);
-	clk_prepare_enable(mali->bus_clk);
-	clk_prepare_enable(mali->mod_clk);
-
-	mdelay(100);
-
-	mali_print_core_version(&res);
+	mali_print_core_version(regs);
 
 	ret = platform_device_add(mali->dev);
 	if (ret) {
@@ -227,6 +294,7 @@ int mali_platform_device_register(void)
 
 	pr_info("Allwinner sunXi mali glue initialized\n");
 
+	iounmap(regs);
 	of_node_put(np);
 
 	return 0;
