@@ -186,7 +186,9 @@ all: modules
 clean:
 	$(MAKE) ARCH=$(ARCH) -C $(KDIR) M=$(CURDIR) clean
 
-install: modules
+install: modules_install
+
+modules_install: modules
 	$(MAKE) ARCH=$(ARCH) -C $(KDIR) M=$(CURDIR) INSTALL_MOD_PATH=$(INSTALL_MOD_PATH) modules_install
 
 kernelrelease:
