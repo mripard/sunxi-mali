@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 ARM Limited. All rights reserved.
+ * Copyright (C) 2012-2016 ARM Limited. All rights reserved.
  * 
  * This program is free software and is provided to you under the terms of the GNU General Public License version 2
  * as published by the Free Software Foundation, and any use by you of this program is subject to the terms of such GNU licence.
@@ -60,9 +60,10 @@ MALI_STATIC_INLINE u32 mali_scheduler_job_gp_big_job_count(void)
 	return job_queue_gp.big_job_num;
 }
 
-u32 mali_scheduler_job_physical_head_count(void);
+u32 mali_scheduler_job_physical_head_count(mali_bool gpu_mode_is_secure);
 
 mali_bool mali_scheduler_job_next_is_virtual(void);
+struct mali_pp_job *mali_scheduler_job_pp_next(void);
 
 struct mali_gp_job *mali_scheduler_job_gp_get(void);
 struct mali_pp_job *mali_scheduler_job_pp_physical_peek(void);

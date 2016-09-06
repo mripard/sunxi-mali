@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2015 ARM Limited. All rights reserved.
+ * Copyright (C) 2013-2016 ARM Limited. All rights reserved.
  * 
  * This program is free software and is provided to you under the terms of the GNU General Public License version 2
  * as published by the Free Software Foundation, and any use by you of this program is subject to the terms of such GNU licence.
@@ -27,6 +27,7 @@ typedef enum mali_mem_type {
 	MALI_MEM_UMP,
 	MALI_MEM_BLOCK,
 	MALI_MEM_COW,
+	MALI_MEM_SECURE,
 	MALI_MEM_TYPE_MAX,
 } mali_mem_type;
 
@@ -170,6 +171,15 @@ typedef struct mali_mem_swap {
 	u32 count;
 } mali_mem_swap;
 
+typedef struct mali_mem_secure {
+#if defined(CONFIG_DMA_SHARED_BUFFER)
+	struct dma_buf *buf;
+	struct dma_buf_attachment *attachment;
+	struct sg_table *sgt;
+#endif
+	u32 count;
+} mali_mem_secure;
+
 #define MALI_MEM_BACKEND_FLAG_COWED                   (0x1)  /* COW has happen on this backend */
 #define MALI_MEM_BACKEND_FLAG_COW_CPU_NO_WRITE        (0x2)  /* This is an COW backend, mapped as not allowed cpu to write */
 #define MALI_MEM_BACKEND_FLAG_SWAP_COWED              (0x4)  /* Mark the given backend is cowed from swappable memory. */
@@ -192,6 +202,7 @@ typedef struct mali_mem_backend {
 		mali_mem_block_mem block_mem; /**< MALI_MEM_BLOCK */
 		mali_mem_cow cow_mem;
 		mali_mem_swap swap_mem;
+		mali_mem_secure secure_mem;
 	};
 	mali_mem_allocation *mali_allocation;
 	struct mutex mutex;

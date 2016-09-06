@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2015 ARM Limited. All rights reserved.
+ * Copyright (C) 2011-2016 ARM Limited. All rights reserved.
  * 
  * This program is free software and is provided to you under the terms of the GNU General Public License version 2
  * as published by the Free Software Foundation, and any use by you of this program is subject to the terms of such GNU licence.
@@ -24,6 +24,10 @@
 #include "mali_executor.h"
 #if defined(CONFIG_DMA_SHARED_BUFFER) && !defined(CONFIG_MALI_DMA_BUF_MAP_ON_ATTACH)
 #include "linux/mali_memory_dma_buf.h"
+#endif
+#if defined(CONFIG_MALI_DMA_BUF_FENCE)
+#include "linux/mali_dma_fence.h"
+#include <linux/fence.h>
 #endif
 
 typedef enum pp_job_status {
@@ -94,6 +98,11 @@ struct mali_pp_job {
 	 */
 	u32 perf_counter_value0[_MALI_PP_MAX_SUB_JOBS];    /**< Value of performance counter 0 (to be returned to user space), one for each sub job */
 	u32 perf_counter_value1[_MALI_PP_MAX_SUB_JOBS];    /**< Value of performance counter 1 (to be returned to user space), one for each sub job */
+
+#if defined(CONFIG_MALI_DMA_BUF_FENCE)
+	struct mali_dma_fence_context dma_fence_context; /**< The mali dma fence context to record dma fence waiters that this job wait for */
+	struct fence *rendered_dma_fence; /**< the new dma fence link to this job */
+#endif
 };
 
 void mali_pp_job_initialize(void);
@@ -492,6 +501,13 @@ MALI_STATIC_INLINE mali_bool mali_pp_job_is_window_surface(
 {
 	MALI_DEBUG_ASSERT_POINTER(job);
 	return (job->uargs.flags & _MALI_PP_JOB_FLAG_IS_WINDOW_SURFACE)
+	       ? MALI_TRUE : MALI_FALSE;
+}
+
+MALI_STATIC_INLINE mali_bool mali_pp_job_is_protected_job(struct mali_pp_job *job)
+{
+	MALI_DEBUG_ASSERT_POINTER(job);
+	return (job->uargs.flags & _MALI_PP_JOB_FLAG_PROTECTED)
 	       ? MALI_TRUE : MALI_FALSE;
 }
 

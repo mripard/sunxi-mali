@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2015 ARM Limited. All rights reserved.
+ * Copyright (C) 2010-2016 ARM Limited. All rights reserved.
  * 
  * This program is free software and is provided to you under the terms of the GNU General Public License version 2
  * as published by the Free Software Foundation, and any use by you of this program is subject to the terms of such GNU licence.
@@ -30,6 +30,7 @@ struct mali_session_data {
 	_mali_osk_notification_queue_t *ioctl_queue;
 
 	_mali_osk_mutex_t *memory_lock; /**< Lock protecting the vm manipulation */
+	_mali_osk_mutex_t *cow_lock; /** < Lock protecting the cow memory free manipulation */
 #if 0
 	_mali_osk_list_t memory_head; /**< Track all the memory allocated in this session, for freeing on abnormal termination */
 #endif
@@ -56,6 +57,11 @@ struct mali_session_data {
 	size_t max_mali_mem_allocated_size; /**< The past max mali memory allocated size, which include mali os memory and mali dedicated memory. */
 	/* Added for new memroy system */
 	struct mali_allocation_manager allocation_mgr;
+
+#if defined(CONFIG_MALI_DMA_BUF_FENCE)
+	u32 fence_context;      /** <  The execution dma fence context this fence is run on. */
+	_mali_osk_atomic_t fence_seqno; /** < Alinear increasing sequence number for this dma fence context. */
+#endif
 };
 
 _mali_osk_errcode_t mali_session_initialize(void);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2015 ARM Limited. All rights reserved.
+ * Copyright (C) 2013-2016 ARM Limited. All rights reserved.
  * 
  * This program is free software and is provided to you under the terms of the GNU General Public License version 2
  * as published by the Free Software Foundation, and any use by you of this program is subject to the terms of such GNU licence.
@@ -200,7 +200,7 @@ int mali_mem_os_alloc_pages(mali_mem_os_mem *os_mem, u32 size)
 	/* Allocate new pages, if needed. */
 	for (i = 0; i < remaining; i++) {
 		dma_addr_t dma_addr;
-		gfp_t flags = __GFP_ZERO | __GFP_NORETRY | __GFP_NOWARN | __GFP_COLD;
+		gfp_t flags = __GFP_ZERO | __GFP_REPEAT | __GFP_NOWARN | __GFP_COLD;
 		int err;
 
 #if defined(CONFIG_ARM) && !defined(CONFIG_ARM_LPAE)
@@ -449,6 +449,7 @@ u32 mali_mem_os_release(mali_mem_backend *mem_bkend)
 {
 
 	mali_mem_allocation *alloc;
+	struct mali_session_data *session;
 	u32 free_pages_nr = 0;
 	MALI_DEBUG_ASSERT_POINTER(mem_bkend);
 	MALI_DEBUG_ASSERT(MALI_MEM_OS == mem_bkend->type);
@@ -456,12 +457,18 @@ u32 mali_mem_os_release(mali_mem_backend *mem_bkend)
 	alloc = mem_bkend->mali_allocation;
 	MALI_DEBUG_ASSERT_POINTER(alloc);
 
+	session = alloc->session;
+	MALI_DEBUG_ASSERT_POINTER(session);
+
 	/* Unmap the memory from the mali virtual address space. */
 	mali_mem_os_mali_unmap(alloc);
 	mutex_lock(&mem_bkend->mutex);
 	/* Free pages */
 	if (MALI_MEM_BACKEND_FLAG_COWED & mem_bkend->flags) {
+		/* Lock to avoid the free race condition for the cow shared memory page node. */
+		_mali_osk_mutex_wait(session->cow_lock);
 		free_pages_nr = mali_mem_os_free(&mem_bkend->os_mem.pages, mem_bkend->os_mem.count, MALI_TRUE);
+		_mali_osk_mutex_signal(session->cow_lock);
 	} else {
 		free_pages_nr = mali_mem_os_free(&mem_bkend->os_mem.pages, mem_bkend->os_mem.count, MALI_FALSE);
 	}

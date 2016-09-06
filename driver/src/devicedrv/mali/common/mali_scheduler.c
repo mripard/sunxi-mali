@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 ARM Limited. All rights reserved.
+ * Copyright (C) 2012-2016 ARM Limited. All rights reserved.
  * 
  * This program is free software and is provided to you under the terms of the GNU General Public License version 2
  * as published by the Free Software Foundation, and any use by you of this program is subject to the terms of such GNU licence.
@@ -20,10 +20,14 @@
 #include "mali_group.h"
 #include <linux/wait.h>
 #include <linux/sched.h>
-
+#include "mali_pm_metrics.h"
 
 #if defined(CONFIG_DMA_SHARED_BUFFER)
 #include "mali_memory_dma_buf.h"
+#if defined(CONFIG_MALI_DMA_BUF_FENCE)
+#include "mali_dma_fence.h"
+#include <linux/dma-buf.h>
+#endif
 #endif
 
 #if defined(CONFIG_GPU_TRACEPOINTS) && defined(CONFIG_TRACEPOINTS)
@@ -80,8 +84,8 @@ static _MALI_OSK_LIST_HEAD_STATIC_INIT(scheduler_pp_job_queue_list);
 
 static mali_timeline_point mali_scheduler_submit_gp_job(
 	struct mali_session_data *session, struct mali_gp_job *job);
-static mali_timeline_point mali_scheduler_submit_pp_job(
-	struct mali_session_data *session, struct mali_pp_job *job);
+static _mali_osk_errcode_t mali_scheduler_submit_pp_job(
+	struct mali_session_data *session, struct mali_pp_job *job, mali_timeline_point *point);
 
 static mali_bool mali_scheduler_queue_gp_job(struct mali_gp_job *job);
 static mali_bool mali_scheduler_queue_pp_job(struct mali_pp_job *job);
@@ -191,7 +195,7 @@ void mali_scheduler_terminate(void)
 	_mali_osk_atomic_term(&mali_job_id_autonumber);
 }
 
-u32 mali_scheduler_job_physical_head_count(void)
+u32 mali_scheduler_job_physical_head_count(mali_bool gpu_mode_is_secure)
 {
 	/*
 	 * Count how many physical sub jobs are present from the head of queue
@@ -216,16 +220,23 @@ u32 mali_scheduler_job_physical_head_count(void)
 			 * Remember; virtual jobs can't be queued and started
 			 * at the same time, so this must be a physical job
 			 */
-			count += mali_pp_job_unstarted_sub_job_count(job);
-			if (MALI_MAX_NUMBER_OF_PHYSICAL_PP_GROUPS <= count) {
-				return MALI_MAX_NUMBER_OF_PHYSICAL_PP_GROUPS;
+			if ((MALI_FALSE  == gpu_mode_is_secure && MALI_FALSE == mali_pp_job_is_protected_job(job))
+			    || (MALI_TRUE  == gpu_mode_is_secure && MALI_TRUE == mali_pp_job_is_protected_job(job))) {
+
+				count += mali_pp_job_unstarted_sub_job_count(job);
+				if (MALI_MAX_NUMBER_OF_PHYSICAL_PP_GROUPS <= count) {
+					return MALI_MAX_NUMBER_OF_PHYSICAL_PP_GROUPS;
+				}
 			}
 		}
 	}
 
 	_MALI_OSK_LIST_FOREACHENTRY(job, temp, &job_queue_pp.high_pri,
 				    struct mali_pp_job, list) {
-		if (MALI_FALSE == mali_pp_job_is_virtual(job)) {
+		if ((MALI_FALSE == mali_pp_job_is_virtual(job))
+		    && ((MALI_FALSE  == gpu_mode_is_secure && MALI_FALSE == mali_pp_job_is_protected_job(job))
+			|| (MALI_TRUE  == gpu_mode_is_secure && MALI_TRUE == mali_pp_job_is_protected_job(job)))) {
+
 			count += mali_pp_job_unstarted_sub_job_count(job);
 			if (MALI_MAX_NUMBER_OF_PHYSICAL_PP_GROUPS <= count) {
 				return MALI_MAX_NUMBER_OF_PHYSICAL_PP_GROUPS;
@@ -238,22 +249,55 @@ u32 mali_scheduler_job_physical_head_count(void)
 
 	_MALI_OSK_LIST_FOREACHENTRY(job, temp, &job_queue_pp.normal_pri,
 				    struct mali_pp_job, list) {
-		if (MALI_FALSE == mali_pp_job_is_virtual(job)) {
-			/* any partially started is already counted */
-			if (MALI_FALSE == mali_pp_job_has_started_sub_jobs(job)) {
-				count += mali_pp_job_unstarted_sub_job_count(job);
-				if (MALI_MAX_NUMBER_OF_PHYSICAL_PP_GROUPS <=
-				    count) {
-					return MALI_MAX_NUMBER_OF_PHYSICAL_PP_GROUPS;
-				}
+		if ((MALI_FALSE == mali_pp_job_is_virtual(job))
+		    && (MALI_FALSE == mali_pp_job_has_started_sub_jobs(job))
+		    && ((MALI_FALSE  == gpu_mode_is_secure && MALI_FALSE == mali_pp_job_is_protected_job(job))
+			|| (MALI_TRUE  == gpu_mode_is_secure && MALI_TRUE == mali_pp_job_is_protected_job(job)))) {
+
+			count += mali_pp_job_unstarted_sub_job_count(job);
+			if (MALI_MAX_NUMBER_OF_PHYSICAL_PP_GROUPS <= count) {
+				return MALI_MAX_NUMBER_OF_PHYSICAL_PP_GROUPS;
 			}
 		} else {
 			/* Came across a virtual job, so stop counting */
 			return count;
 		}
 	}
-
 	return count;
+}
+
+struct mali_pp_job *mali_scheduler_job_pp_next(void)
+{
+	struct mali_pp_job *job;
+	struct mali_pp_job *temp;
+
+	MALI_DEBUG_ASSERT_LOCK_HELD(mali_scheduler_lock_obj);
+
+	/* Check for partially started normal pri jobs */
+	if (!_mali_osk_list_empty(&job_queue_pp.normal_pri)) {
+		MALI_DEBUG_ASSERT(0 < job_queue_pp.depth);
+
+		job = _MALI_OSK_LIST_ENTRY(job_queue_pp.normal_pri.next,
+					   struct mali_pp_job, list);
+
+		MALI_DEBUG_ASSERT_POINTER(job);
+
+		if (MALI_TRUE == mali_pp_job_has_started_sub_jobs(job)) {
+			return job;
+		}
+	}
+
+	_MALI_OSK_LIST_FOREACHENTRY(job, temp, &job_queue_pp.high_pri,
+				    struct mali_pp_job, list) {
+		return job;
+	}
+
+	_MALI_OSK_LIST_FOREACHENTRY(job, temp, &job_queue_pp.normal_pri,
+				    struct mali_pp_job, list) {
+		return job;
+	}
+
+	return NULL;
 }
 
 mali_bool mali_scheduler_job_next_is_virtual(void)
@@ -534,6 +578,7 @@ void mali_scheduler_complete_gp_job(struct mali_gp_job *job,
 		if (mali_utilization_enabled()) {
 			mali_utilization_gp_end();
 		}
+		mali_pm_record_gpu_idle(MALI_TRUE);
 	}
 
 	mali_gp_job_delete(job);
@@ -547,6 +592,11 @@ void mali_scheduler_complete_pp_job(struct mali_pp_job *job,
 	job->user_notification = user_notification;
 	job->num_pp_cores_in_virtual = num_cores_in_virtual;
 
+#if defined(CONFIG_MALI_DMA_BUF_FENCE)
+	if (NULL != job->rendered_dma_fence)
+		mali_dma_fence_signal_and_put(&job->rendered_dma_fence);
+#endif
+
 	if (dequeued) {
 #if defined(CONFIG_MALI_DVFS)
 		if (mali_pp_job_is_window_surface(job)) {
@@ -555,12 +605,12 @@ void mali_scheduler_complete_pp_job(struct mali_pp_job *job,
 			mali_session_inc_num_window_jobs(session);
 		}
 #endif
-
 		_mali_osk_pm_dev_ref_put();
 
 		if (mali_utilization_enabled()) {
 			mali_utilization_pp_end();
 		}
+		mali_pm_record_gpu_idle(MALI_FALSE);
 	}
 
 	/* With ZRAM feature enabled, all pp jobs will be force to use deferred delete. */
@@ -714,6 +764,7 @@ _mali_osk_errcode_t _mali_ukk_gp_start_job(void *ctx,
 _mali_osk_errcode_t _mali_ukk_pp_start_job(void *ctx,
 		_mali_uk_pp_start_job_s *uargs)
 {
+	_mali_osk_errcode_t ret;
 	struct mali_session_data *session;
 	struct mali_pp_job *job;
 	mali_timeline_point point;
@@ -732,23 +783,27 @@ _mali_osk_errcode_t _mali_ukk_pp_start_job(void *ctx,
 
 	point_ptr = (u32 __user *)(uintptr_t)mali_pp_job_get_timeline_point_ptr(job);
 
-	point = mali_scheduler_submit_pp_job(session, job);
+	/* Submit PP job. */
+	ret = mali_scheduler_submit_pp_job(session, job, &point);
 	job = NULL;
 
-	if (0 != _mali_osk_put_user(((u32) point), point_ptr)) {
-		/*
-		 * Let user space know that something failed
-		 * after the job was started.
-		 */
-		return _MALI_OSK_ERR_ITEM_NOT_FOUND;
+	if (_MALI_OSK_ERR_OK == ret) {
+		if (0 != _mali_osk_put_user(((u32) point), point_ptr)) {
+			/*
+			* Let user space know that something failed
+			* after the jobs were started.
+			*/
+			return _MALI_OSK_ERR_ITEM_NOT_FOUND;
+		}
 	}
 
-	return _MALI_OSK_ERR_OK;
+	return ret;
 }
 
 _mali_osk_errcode_t _mali_ukk_pp_and_gp_start_job(void *ctx,
 		_mali_uk_pp_and_gp_start_job_s *uargs)
 {
+	_mali_osk_errcode_t ret;
 	struct mali_session_data *session;
 	_mali_uk_pp_and_gp_start_job_s kargs;
 	struct mali_pp_job *pp_job;
@@ -794,18 +849,20 @@ _mali_osk_errcode_t _mali_ukk_pp_and_gp_start_job(void *ctx,
 	gp_job = NULL;
 
 	/* Submit PP job. */
-	point = mali_scheduler_submit_pp_job(session, pp_job);
+	ret = mali_scheduler_submit_pp_job(session, pp_job, &point);
 	pp_job = NULL;
 
-	if (0 != _mali_osk_put_user(((u32) point), point_ptr)) {
-		/*
-		 * Let user space know that something failed
-		 * after the jobs were started.
-		 */
-		return _MALI_OSK_ERR_ITEM_NOT_FOUND;
+	if (_MALI_OSK_ERR_OK == ret) {
+		if (0 != _mali_osk_put_user(((u32) point), point_ptr)) {
+			/*
+			* Let user space know that something failed
+			* after the jobs were started.
+			*/
+			return _MALI_OSK_ERR_ITEM_NOT_FOUND;
+		}
 	}
 
-	return _MALI_OSK_ERR_OK;
+	return ret;
 }
 
 void _mali_ukk_pp_job_disable_wb(_mali_uk_pp_disable_wb_s *args)
@@ -914,10 +971,19 @@ static mali_timeline_point mali_scheduler_submit_gp_job(
 	return point;
 }
 
-static mali_timeline_point mali_scheduler_submit_pp_job(
-	struct mali_session_data *session, struct mali_pp_job *job)
+static _mali_osk_errcode_t mali_scheduler_submit_pp_job(
+	struct mali_session_data *session, struct mali_pp_job *job, mali_timeline_point *point)
+
 {
-	mali_timeline_point point;
+	_mali_osk_errcode_t ret = _MALI_OSK_ERR_OK;
+
+#if defined(CONFIG_MALI_DMA_BUF_FENCE)
+	struct ww_acquire_ctx ww_actx;
+	u32 i;
+	u32 num_memory_cookies = 0;
+	struct reservation_object **reservation_object_list = NULL;
+	unsigned int num_reservation_object = 0;
+#endif
 
 	MALI_DEBUG_ASSERT_POINTER(session);
 	MALI_DEBUG_ASSERT_POINTER(job);
@@ -930,11 +996,132 @@ static mali_timeline_point mali_scheduler_submit_pp_job(
 	mali_pp_job_fb_lookup_add(job);
 	mali_scheduler_unlock();
 
-	/* Add job to Timeline system. */
-	point = mali_timeline_system_add_tracker(session->timeline_system,
-			mali_pp_job_get_tracker(job), MALI_TIMELINE_PP);
+#if defined(CONFIG_MALI_DMA_BUF_FENCE)
 
-	return point;
+	/* Allocate the reservation_object_list to list the dma reservation object of dependent dma buffer */
+	num_memory_cookies = mali_pp_job_num_memory_cookies(job);
+	if (0 < num_memory_cookies) {
+		reservation_object_list = kzalloc(sizeof(struct reservation_object *) * num_memory_cookies, GFP_KERNEL);
+		if (NULL == reservation_object_list) {
+			MALI_PRINT_ERROR(("Failed to alloc the reservation object list.\n"));
+			ret = _MALI_OSK_ERR_NOMEM;
+			goto failed_to_alloc_reservation_object_list;
+		}
+	}
+
+	/* Add the dma reservation object into reservation_object_list*/
+	for (i = 0; i < num_memory_cookies; i++) {
+		mali_mem_backend *mem_backend = NULL;
+		struct reservation_object *tmp_reservation_object = NULL;
+		u32 mali_addr  = mali_pp_job_get_memory_cookie(job, i);
+
+		mem_backend = mali_mem_backend_struct_search(session, mali_addr);
+
+		MALI_DEBUG_ASSERT_POINTER(mem_backend);
+
+		if (NULL == mem_backend) {
+			MALI_PRINT_ERROR(("Failed to find the memory backend for memory cookie[%d].\n", i));
+			goto failed_to_find_mem_backend;
+		}
+
+		if (MALI_MEM_DMA_BUF != mem_backend->type)
+			continue;
+
+		tmp_reservation_object = mem_backend->dma_buf.attachment->buf->resv;
+
+		if (NULL != tmp_reservation_object) {
+			mali_dma_fence_add_reservation_object_list(tmp_reservation_object,
+					reservation_object_list, &num_reservation_object);
+		}
+	}
+
+	/*
+	 * Add the mali dma fence callback to wait for all dependent dma buf,
+	 * and extend the timeline system to support dma fence,
+	 * then create the new internal dma fence to replace all last dma fence for dependent dma buf.
+	 */
+	if (0 < num_reservation_object) {
+		int error;
+		int num_dma_fence_waiter = 0;
+		/* Create one new dma fence.*/
+		job->rendered_dma_fence = mali_dma_fence_new(job->session->fence_context,
+					  _mali_osk_atomic_inc_return(&job->session->fence_seqno));
+
+		if (NULL == job->rendered_dma_fence) {
+			MALI_PRINT_ERROR(("Failed to creat one new dma fence.\n"));
+			ret = _MALI_OSK_ERR_FAULT;
+			goto failed_to_create_dma_fence;
+		}
+
+		/* In order to avoid deadlock, wait/wound mutex lock to lock all dma buffers*/
+
+		error = mali_dma_fence_lock_reservation_object_list(reservation_object_list,
+				num_reservation_object, &ww_actx);
+
+		if (0 != error) {
+			MALI_PRINT_ERROR(("Failed to lock all reservation objects.\n"));
+			ret = _MALI_OSK_ERR_FAULT;
+			goto failed_to_lock_reservation_object_list;
+		}
+
+		mali_dma_fence_context_init(&job->dma_fence_context,
+					    mali_timeline_dma_fence_callback, (void *)job);
+
+		/* Add dma fence waiters and dma fence callback. */
+		for (i = 0; i < num_reservation_object; i++) {
+			ret = mali_dma_fence_context_add_waiters(&job->dma_fence_context, reservation_object_list[i]);
+			if (_MALI_OSK_ERR_OK != ret) {
+				MALI_PRINT_ERROR(("Failed to add waiter into mali dma fence context.\n"));
+				goto failed_to_add_dma_fence_waiter;
+			}
+		}
+
+		for (i = 0; i < num_reservation_object; i++) {
+			reservation_object_add_excl_fence(reservation_object_list[i], job->rendered_dma_fence);
+		}
+
+		num_dma_fence_waiter = job->dma_fence_context.num_dma_fence_waiter;
+
+		/* Add job to Timeline system. */
+		(*point) = mali_timeline_system_add_tracker(session->timeline_system,
+				mali_pp_job_get_tracker(job), MALI_TIMELINE_PP);
+
+		if (0 != num_dma_fence_waiter) {
+			mali_dma_fence_context_dec_count(&job->dma_fence_context);
+		}
+
+		/* Unlock all wait/wound mutex lock. */
+		mali_dma_fence_unlock_reservation_object_list(reservation_object_list,
+				num_reservation_object, &ww_actx);
+	} else {
+		/* Add job to Timeline system. */
+		(*point) = mali_timeline_system_add_tracker(session->timeline_system,
+				mali_pp_job_get_tracker(job), MALI_TIMELINE_PP);
+	}
+
+	kfree(reservation_object_list);
+	return ret;
+#else
+	/* Add job to Timeline system. */
+	(*point) = mali_timeline_system_add_tracker(session->timeline_system,
+			mali_pp_job_get_tracker(job), MALI_TIMELINE_PP);
+#endif
+
+#if defined(CONFIG_MALI_DMA_BUF_FENCE)
+failed_to_add_dma_fence_waiter:
+	mali_dma_fence_context_term(&job->dma_fence_context);
+	mali_dma_fence_unlock_reservation_object_list(reservation_object_list,
+			num_reservation_object, &ww_actx);
+failed_to_lock_reservation_object_list:
+	mali_dma_fence_signal_and_put(&job->rendered_dma_fence);
+failed_to_create_dma_fence:
+failed_to_find_mem_backend:
+	if (NULL != reservation_object_list)
+		kfree(reservation_object_list);
+failed_to_alloc_reservation_object_list:
+	mali_pp_job_fb_lookup_remove(job);
+#endif
+	return ret;
 }
 
 static mali_bool mali_scheduler_queue_gp_job(struct mali_gp_job *job)
@@ -986,6 +1173,8 @@ static mali_bool mali_scheduler_queue_gp_job(struct mali_gp_job *job)
 		 */
 		mali_utilization_gp_start();
 	}
+
+	mali_pm_record_gpu_active(MALI_TRUE);
 
 	/* Add profiling events for job enqueued */
 	_mali_osk_profiling_add_event(
@@ -1062,8 +1251,9 @@ static mali_bool mali_scheduler_queue_pp_job(struct mali_pp_job *job)
 		mali_utilization_pp_start();
 	}
 
-	/* Add profiling events for job enqueued */
+	mali_pm_record_gpu_active(MALI_FALSE);
 
+	/* Add profiling events for job enqueued */
 	_mali_osk_profiling_add_event(
 		MALI_PROFILING_EVENT_TYPE_SINGLE |
 		MALI_PROFILING_EVENT_CHANNEL_SOFTWARE |
@@ -1203,6 +1393,10 @@ void mali_scheduler_do_pp_job_delete(void *arg)
 	_MALI_OSK_LIST_FOREACHENTRY(job, tmp, &list,
 				    struct mali_pp_job, list) {
 		_mali_osk_list_delinit(&job->list);
+
+#if defined(CONFIG_MALI_DMA_BUF_FENCE)
+		mali_dma_fence_context_term(&job->dma_fence_context);
+#endif
 
 		mali_pp_job_delete(job); /* delete the job object itself */
 	}
