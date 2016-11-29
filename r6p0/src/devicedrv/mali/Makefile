@@ -177,17 +177,12 @@ ifeq ($(MALI_MEM_SWAP_TRACKING),1)
 EXTRA_DEFINES += -DMALI_MEM_SWAP_TRACKING=1
 endif
 
-modules: $(UMP_SYMVERS_FILE)
+all: $(UMP_SYMVERS_FILE)
 	$(MAKE) ARCH=$(ARCH) -C $(KDIR) M=$(CURDIR) modules
 	@rm $(FILES_PREFIX)__malidrv_build_info.c $(FILES_PREFIX)__malidrv_build_info.o
 
-all: modules
-
 clean:
 	$(MAKE) ARCH=$(ARCH) -C $(KDIR) M=$(CURDIR) clean
-
-install: modules
-	$(MAKE) ARCH=$(ARCH) -C $(KDIR) M=$(CURDIR) INSTALL_MOD_PATH=$(INSTALL_MOD_PATH) modules_install
 
 kernelrelease:
 	$(MAKE) ARCH=$(ARCH) -C $(KDIR) kernelrelease
