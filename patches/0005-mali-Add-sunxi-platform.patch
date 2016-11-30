@@ -13,7 +13,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 
 --- /dev/null
 +++ b/src/devicedrv/mali/platform/sunxi/sunxi.c
-@@ -0,0 +1,349 @@
+@@ -0,0 +1,282 @@
 +
 +#include <linux/clk.h>
 +#include <linux/delay.h>
@@ -101,44 +101,6 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	return res;
 +}
 +
-+static int mali_get_core_numbers(void __iomem *regs)
-+{
-+	int i;
-+
-+	for (i = 0; i < 4; i++) {
-+		u32 val;
-+
-+		val = readl(regs + MALI_PP_BASE(i) + MALI_PP_VERSION_REG);
-+		if (!val)
-+			break;
-+	}
-+
-+	return i;
-+}
-+
-+static void mali_print_core_version(void __iomem *regs)
-+{
-+	unsigned int gpu_model, major, minor;
-+	u32 val;
-+
-+	val = readl(regs + MALI_GP_VERSION_REG);
-+	minor = val & 0xff;
-+	major = (val >> 8) & 0xff;
-+
-+	switch (val >> 16) {
-+	case MALI_GP_VERSION_400:
-+		gpu_model = 400;
-+		break;
-+
-+	default:
-+		pr_err("Unrecognized GPU\n");
-+		return;
-+	}
-+
-+	pr_info("Found ARM Mali %u MP%d (r%up%u)\n",
-+		gpu_model, mali_get_core_numbers(regs), major, minor);
-+};
-+
 +static const struct of_device_id mali_dt_ids[] = {
 +	{ .compatible = "arm,mali-400" },
 +	{ /* sentinel */ },
@@ -151,10 +113,8 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	int irq_pp0, irq_ppmmu0;
 +	int irq_pp1 = -EINVAL, irq_ppmmu1 = -EINVAL;
 +	int irq_pmu;
-+	int nr_cores;
 +	struct resource *mali_res = NULL, res;
 +	struct device_node *np;
-+	void __iomem *regs;
 +	int ret, len;
 +
 +	np = of_find_matching_node(NULL, mali_dt_ids);
@@ -205,20 +165,6 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +		goto err_put_reset;
 +	}
 +
-+	regs = ioremap(res.start, resource_size(&res));
-+	if (!regs) {
-+		pr_err("Couldn't map our base address\n");
-+		goto err_put_reset;
-+	}
-+
-+	nr_cores = mali_get_core_numbers(regs);
-+	if ((nr_cores < 1) || (nr_cores > 2)) {
-+		pr_err("Invalid number of GPU cores %d\n", nr_cores);
-+		goto err_put_reset;
-+	}
-+
-+	pr_info("Number of cores %d\n", nr_cores);
-+
 +	irq_gp = of_irq_get_byname(np, "IRQGP");
 +	if (irq_gp < 0) {
 +		pr_err("Couldn't retrieve our GP interrupt\n");
@@ -247,20 +193,12 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +		goto err_put_reset;
 +	}
 +
-+	if (nr_cores >= 2) {
-+		irq_pp1 = of_irq_get_byname(np, "IRQPP1");
-+		if (irq_pp1 < 0) {
-+			pr_err("Couldn't retrieve our PP1 interrupt\n");
-+			ret = irq_pp1;
-+			goto err_put_reset;
-+		}
-+
-+		irq_ppmmu1 = of_irq_get_byname(np, "IRQPPMMU1");
-+		if (irq_ppmmu1 < 0) {
-+			pr_err("Couldn't retrieve our PP1 MMU interrupt\n");
-+			ret = irq_ppmmu1;
-+			goto err_put_reset;
-+		}
++	irq_pp1 = of_irq_get_byname(np, "IRQPP1");
++	irq_ppmmu1 = of_irq_get_byname(np, "IRQPPMMU1");
++	if ((irq_pp1 < 0) ^ (irq_ppmmu1 < 0 )) {
++		pr_err("Couldn't retrieve our PP1 interrupts\n");
++		ret = (irq_pp1 < 0) ? irq_pp1 : irq_ppmmu1;
++		goto err_put_reset;
 +	}
 +
 +	irq_pmu = of_irq_get_byname(np, "IRQPMU");
@@ -279,19 +217,17 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	mali->dev->dev.dma_mask = &mali->dev->dev.coherent_dma_mask;
 +	mali->dev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
 +
-+	if (nr_cores == 1)
-+		mali_res = mali_create_mp1_resources(res.start,
-+						     irq_gp, irq_gpmmu,
-+						     irq_pp0, irq_ppmmu0,
-+						     &len);
-+	else if (nr_cores == 2)
++	if ((irq_pp1 >= 0) && (irq_ppmmu1 >= 0))
 +		mali_res = mali_create_mp2_resources(res.start,
 +						     irq_gp, irq_gpmmu,
 +						     irq_pp0, irq_ppmmu0,
 +						     irq_pp1, irq_ppmmu1,
 +						     &len);
 +	else
-+		mali_res = NULL;
++		mali_res = mali_create_mp1_resources(res.start,
++						     irq_gp, irq_gpmmu,
++						     irq_pp0, irq_ppmmu0,
++						     &len);
 +
 +	if (!mali_res) {
 +		pr_err("Couldn't create target resources\n");
@@ -305,15 +241,12 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +		goto err_free_resources;
 +	}
 +
-+	mali_print_core_version(regs);
-+
 +	ret = platform_device_add(mali->dev);
 +	if (ret) {
 +		pr_err("Couldn't add our device\n");
 +		goto err_unprepare_clk;
 +	}
 +
-+	iounmap(regs);
 +	of_node_put(np);
 +
 +#ifdef CONFIG_PM_RUNTIME
