@@ -13,7 +13,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 
 --- /dev/null
 +++ b/src/devicedrv/mali/platform/sunxi/sunxi.c
-@@ -0,0 +1,282 @@
+@@ -0,0 +1,294 @@
 +
 +#include <linux/clk.h>
 +#include <linux/delay.h>
@@ -116,6 +116,11 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	struct resource *mali_res = NULL, res;
 +	struct device_node *np;
 +	int ret, len;
++	struct mali_gpu_device_data mali_gpu_data = {
++		.fb_start	= 0x40000000,
++		.fb_size	= (1 << 30),
++		.shared_mem_size = (CONFIG_CMA_SIZE_MBYTES << 20),
++	};
 +
 +	np = of_find_matching_node(NULL, mali_dt_ids);
 +	if (!np) {
@@ -238,6 +243,13 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	ret = platform_device_add_resources(mali->dev, mali_res, len);
 +	if (ret) {
 +		pr_err("Couldn't add our resources\n");
++		goto err_free_resources;
++	}
++
++	ret = platform_device_add_data(mali->dev, &mali_gpu_data,
++				       sizeof(mali_gpu_data));
++	if (ret) {
++		pr_err("Couldn't add our platform data\n");
 +		goto err_free_resources;
 +	}
 +
