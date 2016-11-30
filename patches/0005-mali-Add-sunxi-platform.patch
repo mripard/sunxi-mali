@@ -11,12 +11,9 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
  1 file changed, 333 insertions(+)
  create mode 100644 src/devicedrv/mali/platform/sunxi/sunxi.c
 
-diff --git a/src/devicedrv/mali/platform/sunxi/sunxi.c b/src/devicedrv/mali/platform/sunxi/sunxi.c
-new file mode 100644
-index 000000000000..aa8d98f9ac84
 --- /dev/null
 +++ b/src/devicedrv/mali/platform/sunxi/sunxi.c
-@@ -0,0 +1,333 @@
+@@ -0,0 +1,349 @@
 +
 +#include <linux/clk.h>
 +#include <linux/delay.h>
@@ -26,12 +23,15 @@ index 000000000000..aa8d98f9ac84
 +#include <linux/of_address.h>
 +#include <linux/of_device.h>
 +#include <linux/of_irq.h>
++#include <linux/pm_runtime.h>
 +#include <linux/reset.h>
 +#include <linux/slab.h>
 +
 +#include <linux/clk/clk-conf.h>
 +
 +#include <linux/mali/mali_utgard.h>
++
++#include "mali_kernel_linux.h"
 +
 +#define MALI_PP_BASE(pp)	(0x8000 + 0x2000 * (pp))
 +#define MALI_PP_VERSION_REG	0x1000
@@ -313,10 +313,18 @@ index 000000000000..aa8d98f9ac84
 +		goto err_unprepare_clk;
 +	}
 +
-+	pr_info("Allwinner sunXi mali glue initialized\n");
-+
 +	iounmap(regs);
 +	of_node_put(np);
++
++#ifdef CONFIG_PM_RUNTIME
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37))
++	pm_runtime_set_autosuspend_delay(&mali->dev->dev, 1000);
++	pm_runtime_use_autosuspend(&mali->dev->dev);
++#endif
++	pm_runtime_enable(&mali->dev->dev);
++#endif
++
++	pr_info("Allwinner sunXi mali glue initialized\n");
 +
 +	return 0;
 +
@@ -343,6 +351,11 @@ index 000000000000..aa8d98f9ac84
 +
 +int mali_platform_device_unregister(void)
 +{
++
++#ifdef CONFIG_PM_RUNTIME
++	pm_runtime_disable(&mali->dev->dev);
++#endif
++
 +	reset_control_put(mali->reset);
 +	clk_put(mali->mod_clk);
 +	clk_put(mali->bus_clk);
@@ -350,6 +363,3 @@ index 000000000000..aa8d98f9ac84
 +
 +	return 0;
 +}
--- 
-2.10.2
-
