@@ -13,16 +13,20 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 
 --- /dev/null
 +++ b/src/devicedrv/mali/platform/sunxi/sunxi.c
-@@ -0,0 +1,298 @@
+@@ -0,0 +1,313 @@
 +
 +#include <linux/clk.h>
++#include <linux/cma.h>
 +#include <linux/delay.h>
++#include <linux/dma-contiguous.h>
 +#include <linux/dma-mapping.h>
 +#include <linux/io.h>
++#include <linux/kernel.h>
 +#include <linux/module.h>
 +#include <linux/of_address.h>
 +#include <linux/of_device.h>
 +#include <linux/of_irq.h>
++#include <linux/of_reserved_mem.h>
 +#include <linux/pm_runtime.h>
 +#include <linux/reset.h>
 +#include <linux/slab.h>
@@ -109,6 +113,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +
 +int mali_platform_device_register(void)
 +{
++	struct mali_gpu_device_data mali_gpu_data = { 0 };
 +	int irq_gp, irq_gpmmu;
 +	int irq_pp0, irq_ppmmu0;
 +	int irq_pp1 = -EINVAL, irq_ppmmu1 = -EINVAL;
@@ -116,12 +121,8 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	struct resource *mali_res = NULL, res;
 +	struct device_node *np;
 +	struct device *dev;
++	struct cma *cma;
 +	int ret, len;
-+	struct mali_gpu_device_data mali_gpu_data = {
-+		.fb_start	= 0x40000000,
-+		.fb_size	= (1 << 30),
-+		.shared_mem_size = (CONFIG_CMA_SIZE_MBYTES << 20),
-+	};
 +
 +	np = of_find_matching_node(NULL, mali_dt_ids);
 +	if (!np) {
@@ -226,6 +227,18 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	dev->dma_mask = &dev->coherent_dma_mask;
 +	dev->coherent_dma_mask = DMA_BIT_MASK(32);
 +
++	ret = of_reserved_mem_device_init(&mali->dev->dev);
++	if (ret < 0) {
++		pr_err("Couldn't reserve our memory region\n");
++		ret = -EINVAL;
++		goto err_free_pdev;
++	}
++
++	cma = dev_get_cma_area(dev);
++	mali_gpu_data.fb_start = cma_get_base(cma);
++	mali_gpu_data.fb_size = cma_get_size(cma);
++	mali_gpu_data.shared_mem_size = cma_get_size(cma);
++
 +	if ((irq_pp1 >= 0) && (irq_ppmmu1 >= 0))
 +		mali_res = mali_create_mp2_resources(res.start,
 +						     irq_gp, irq_gpmmu,
@@ -241,7 +254,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	if (!mali_res) {
 +		pr_err("Couldn't create target resources\n");
 +		ret = -EINVAL;
-+		goto err_free_pdev;
++		goto err_free_mem_region;
 +	}
 +
 +	ret = platform_device_add_resources(mali->dev, mali_res, len);
@@ -283,6 +296,8 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	reset_control_assert(mali->reset);
 +err_free_resources:
 +	kfree(mali_res);
++err_free_mem_region:
++	of_reserved_mem_device_release(dev);
 +err_free_pdev:
 +	platform_device_put(mali->dev);
 +err_put_reset:
