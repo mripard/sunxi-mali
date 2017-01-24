@@ -13,7 +13,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 
 --- /dev/null
 +++ b/src/devicedrv/mali/platform/sunxi/sunxi.c
-@@ -0,0 +1,294 @@
+@@ -0,0 +1,298 @@
 +
 +#include <linux/clk.h>
 +#include <linux/delay.h>
@@ -115,6 +115,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	int irq_pmu;
 +	struct resource *mali_res = NULL, res;
 +	struct device_node *np;
++	struct device *dev;
 +	int ret, len;
 +	struct mali_gpu_device_data mali_gpu_data = {
 +		.fb_start	= 0x40000000,
@@ -219,8 +220,11 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +		ret = -EINVAL;
 +		goto err_put_reset;
 +	}
-+	mali->dev->dev.dma_mask = &mali->dev->dev.coherent_dma_mask;
-+	mali->dev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
++	dev = &mali->dev->dev;
++	dev_set_name(dev, "mali-utgard");
++	dev->of_node = np;
++	dev->dma_mask = &dev->coherent_dma_mask;
++	dev->coherent_dma_mask = DMA_BIT_MASK(32);
 +
 +	if ((irq_pp1 >= 0) && (irq_ppmmu1 >= 0))
 +		mali_res = mali_create_mp2_resources(res.start,
