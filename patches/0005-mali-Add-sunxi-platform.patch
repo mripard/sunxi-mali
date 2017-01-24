@@ -13,7 +13,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 
 --- /dev/null
 +++ b/src/devicedrv/mali/platform/sunxi/sunxi.c
-@@ -0,0 +1,313 @@
+@@ -0,0 +1,304 @@
 +
 +#include <linux/clk.h>
 +#include <linux/cma.h>
@@ -36,15 +36,6 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +#include <linux/mali/mali_utgard.h>
 +
 +#include "mali_kernel_linux.h"
-+
-+#define MALI_PP_BASE(pp)	(0x8000 + 0x2000 * (pp))
-+#define MALI_PP_VERSION_REG	0x1000
-+
-+#define MALI_GP_VERSION_REG	0x6c
-+#define MALI_GP_VERSION_200		0x0a07
-+#define MALI_GP_VERSION_300		0x0c07
-+#define MALI_GP_VERSION_400		0x0b07
-+#define MALI_GP_VERSION_450		0x0d07
 +
 +struct mali {
 +	struct clk		*bus_clk;
