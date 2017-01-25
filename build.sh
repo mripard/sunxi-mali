@@ -17,7 +17,7 @@ build_driver() {
     local driver_dir=$(pwd)/$RELEASE/src/devicedrv/mali/
 
     USING_UMP=0 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi \
-	     USING_DVFS=0 make -C $driver_dir
+	     USING_DVFS=1 USING_DEVFREQ=1 make -C $driver_dir
 
     cp $driver_dir/mali.ko .
 }
