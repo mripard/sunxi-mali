@@ -13,7 +13,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 
 --- /dev/null
 +++ b/src/devicedrv/mali/platform/sunxi/sunxi.c
-@@ -0,0 +1,307 @@
+@@ -0,0 +1,314 @@
 +
 +#include <linux/clk.h>
 +#include <linux/clkdev.h>
@@ -40,7 +40,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +
 +struct mali {
 +	struct clk		*bus_clk;
-+	struct clk		*mod_clk;
++	struct clk		*core_clk;
 +
 +	struct reset_control	*reset;
 +
@@ -98,6 +98,8 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +}
 +
 +static const struct of_device_id mali_dt_ids[] = {
++	{ .compatible = "allwinner,sun4i-a10-mali" },
++	{ .compatible = "allwinner,sun7i-a20-mali" },
 +	{ .compatible = "arm,mali-400" },
 +	{ /* sentinel */ },
 +};
@@ -134,7 +136,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +		goto err_free_mem;
 +	}
 +
-+	mali->bus_clk = of_clk_get_by_name(np, "ahb");
++	mali->bus_clk = of_clk_get_by_name(np, "bus");
 +	if (IS_ERR(mali->bus_clk)) {
 +		pr_err("Couldn't retrieve our bus clock\n");
 +		ret = PTR_ERR(mali->bus_clk);
@@ -142,21 +144,24 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	}
 +	clk_prepare_enable(mali->bus_clk);
 +
-+	mali->mod_clk = of_clk_get_by_name(np, "mod");
-+	if (IS_ERR(mali->mod_clk)) {
++	mali->core_clk = of_clk_get_by_name(np, "core");
++	if (IS_ERR(mali->core_clk)) {
 +		pr_err("Couldn't retrieve our module clock\n");
-+		ret = PTR_ERR(mali->mod_clk);
++		ret = PTR_ERR(mali->core_clk);
 +		goto err_put_bus;
 +	}
-+	clk_prepare_enable(mali->mod_clk);
++	clk_prepare_enable(mali->core_clk);
 +
-+	mali->reset = of_reset_control_get(np, NULL);
-+	if (IS_ERR(mali->reset)) {
-+		pr_err("Couldn't retrieve our reset handle\n");
-+		ret = PTR_ERR(mali->reset);
-+		goto err_put_mod;
++	if (of_device_is_compatible(np, "allwinner,sun4i-a10-mali") ||
++	    of_device_is_compatible(np, "allwinner,sun7i-a20-mali")) {
++		mali->reset = of_reset_control_get(np, NULL);
++		if (IS_ERR(mali->reset)) {
++			pr_err("Couldn't retrieve our reset handle\n");
++			ret = PTR_ERR(mali->reset);
++			goto err_put_mod;
++		}
++		reset_control_deassert(mali->reset);
 +	}
-+	reset_control_deassert(mali->reset);
 +
 +	ret = of_address_to_resource(np, 0, &res);
 +	if (ret) {
@@ -164,43 +169,43 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +		goto err_put_reset;
 +	}
 +
-+	irq_gp = of_irq_get_byname(np, "IRQGP");
++	irq_gp = of_irq_get_byname(np, "gp");
 +	if (irq_gp < 0) {
 +		pr_err("Couldn't retrieve our GP interrupt\n");
 +		ret = irq_gp;
 +		goto err_put_reset;
 +	}
 +
-+	irq_gpmmu = of_irq_get_byname(np, "IRQGPMMU");
++	irq_gpmmu = of_irq_get_byname(np, "gpmmu");
 +	if (irq_gpmmu < 0) {
 +		pr_err("Couldn't retrieve our GP MMU interrupt\n");
 +		ret = irq_gpmmu;
 +		goto err_put_reset;
 +	}
 +
-+	irq_pp0 = of_irq_get_byname(np, "IRQPP0");
++	irq_pp0 = of_irq_get_byname(np, "pp0");
 +	if (irq_pp0 < 0) {
 +		pr_err("Couldn't retrieve our PP0 interrupt %d\n", irq_pp0);
 +		ret = irq_pp0;
 +		goto err_put_reset;
 +	}
 +
-+	irq_ppmmu0 = of_irq_get_byname(np, "IRQPPMMU0");
++	irq_ppmmu0 = of_irq_get_byname(np, "ppmmu0");
 +	if (irq_ppmmu0 < 0) {
 +		pr_err("Couldn't retrieve our PP0 MMU interrupt\n");
 +		ret = irq_ppmmu0;
 +		goto err_put_reset;
 +	}
 +
-+	irq_pp1 = of_irq_get_byname(np, "IRQPP1");
-+	irq_ppmmu1 = of_irq_get_byname(np, "IRQPPMMU1");
++	irq_pp1 = of_irq_get_byname(np, "pp1");
++	irq_ppmmu1 = of_irq_get_byname(np, "ppmmu1");
 +	if ((irq_pp1 < 0) ^ (irq_ppmmu1 < 0 )) {
 +		pr_err("Couldn't retrieve our PP1 interrupts\n");
 +		ret = (irq_pp1 < 0) ? irq_pp1 : irq_ppmmu1;
 +		goto err_put_reset;
 +	}
 +
-+	irq_pmu = of_irq_get_byname(np, "IRQPMU");
++	irq_pmu = of_irq_get_byname(np, "pmu");
 +	if (irq_pmu < 0) {
 +		pr_err("Couldn't retrieve our PMU interrupt\n");
 +		ret = irq_pmu;
@@ -249,7 +254,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +		goto err_free_mem_region;
 +	}
 +
-+	clk_register_clkdev(mali->mod_clk, "clk_mali", NULL);
++	clk_register_clkdev(mali->core_clk, "clk_mali", NULL);
 +
 +	ret = platform_device_add_resources(mali->dev, mali_res, len);
 +	if (ret) {
@@ -285,7 +290,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	return 0;
 +
 +err_unprepare_clk:
-+	clk_disable_unprepare(mali->mod_clk);
++	clk_disable_unprepare(mali->core_clk);
 +	clk_disable_unprepare(mali->bus_clk);
 +	reset_control_assert(mali->reset);
 +err_free_resources:
@@ -295,9 +300,10 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +err_free_pdev:
 +	platform_device_put(mali->dev);
 +err_put_reset:
-+	reset_control_put(mali->reset);
++	if (!mali->reset)
++		reset_control_put(mali->reset);
 +err_put_mod:
-+	clk_put(mali->mod_clk);
++	clk_put(mali->core_clk);
 +err_put_bus:
 +	clk_put(mali->bus_clk);
 +err_free_mem:
@@ -314,8 +320,9 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	pm_runtime_disable(&mali->dev->dev);
 +#endif
 +
-+	reset_control_put(mali->reset);
-+	clk_put(mali->mod_clk);
++	if (!mali->reset)
++		reset_control_put(mali->reset);
++	clk_put(mali->core_clk);
 +	clk_put(mali->bus_clk);
 +	kfree(mali);
 +
