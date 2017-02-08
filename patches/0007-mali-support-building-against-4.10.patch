@@ -9,12 +9,16 @@ vmf->virtual_address")
 Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 --- a/src/devicedrv/mali/linux/mali_memory.c
 +++ b/src/devicedrv/mali/linux/mali_memory.c
-@@ -64,7 +64,7 @@ static int mali_mem_vma_fault(struct vm_
+@@ -64,7 +64,12 @@ static int mali_mem_vma_fault(struct vm_
  	int ret;
  	int prefetch_num = MALI_VM_NUM_FAULT_PREFETCH;
  
--	unsigned long address = (unsigned long)vmf->virtual_address;
++#if LINUX_VERSION_CODE > KERNEL_VERSION(4, 9, 0)
 +	unsigned long address = vmf->address;
++#else
+ 	unsigned long address = (unsigned long)vmf->virtual_address;
++#endif
++
  	MALI_DEBUG_ASSERT(alloc->backend_handle);
  	MALI_DEBUG_ASSERT((unsigned long)alloc->cpu_mapping.addr <= address);
  
