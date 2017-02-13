@@ -13,7 +13,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 
 --- /dev/null
 +++ b/src/devicedrv/mali/platform/sunxi/sunxi.c
-@@ -0,0 +1,317 @@
+@@ -0,0 +1,324 @@
 +
 +#include <linux/clk.h>
 +#include <linux/clkdev.h>
@@ -323,10 +323,17 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	platform_device_del(mali->dev);
 +	platform_device_put(mali->dev);
 +
-+	if (!mali->reset)
++	if (!mali->reset) {
++		reset_control_assert(mali->reset);
 +		reset_control_put(mali->reset);
++	}
++
++	clk_disable_unprepare(mali->core_clk);
 +	clk_put(mali->core_clk);
++
++	clk_disable_unprepare(mali->bus_clk);
 +	clk_put(mali->bus_clk);
++
 +	kfree(mali);
 +
 +	return 0;
