@@ -272,7 +272,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	ret = platform_device_add(mali->dev);
 +	if (ret) {
 +		pr_err("Couldn't add our device\n");
-+		goto err_unprepare_clk;
++		goto err_free_resources;
 +	}
 +
 +	of_node_put(np);
@@ -289,10 +289,6 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +
 +	return 0;
 +
-+err_unprepare_clk:
-+	clk_disable_unprepare(mali->core_clk);
-+	clk_disable_unprepare(mali->bus_clk);
-+	reset_control_assert(mali->reset);
 +err_free_resources:
 +	kfree(mali_res);
 +err_free_mem_region:
@@ -300,11 +296,15 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +err_free_pdev:
 +	platform_device_put(mali->dev);
 +err_put_reset:
-+	if (!mali->reset)
++	if (!mali->reset) {
++		reset_control_assert(mali->reset);
 +		reset_control_put(mali->reset);
++	}
 +err_put_mod:
++	clk_disable_unprepare(mali->core_clk);
 +	clk_put(mali->core_clk);
 +err_put_bus:
++	clk_disable_unprepare(mali->bus_clk);
 +	clk_put(mali->bus_clk);
 +err_free_mem:
 +	kfree(mali);
