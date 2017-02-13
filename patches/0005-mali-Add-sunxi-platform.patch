@@ -13,7 +13,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 
 --- /dev/null
 +++ b/src/devicedrv/mali/platform/sunxi/sunxi.c
-@@ -0,0 +1,324 @@
+@@ -0,0 +1,322 @@
 +
 +#include <linux/clk.h>
 +#include <linux/clkdev.h>
@@ -257,22 +257,23 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	clk_register_clkdev(mali->core_clk, "clk_mali", NULL);
 +
 +	ret = platform_device_add_resources(mali->dev, mali_res, len);
++	kfree(mali_res);
 +	if (ret) {
 +		pr_err("Couldn't add our resources\n");
-+		goto err_free_resources;
++		goto err_free_mem_region;
 +	}
 +
 +	ret = platform_device_add_data(mali->dev, &mali_gpu_data,
 +				       sizeof(mali_gpu_data));
 +	if (ret) {
 +		pr_err("Couldn't add our platform data\n");
-+		goto err_free_resources;
++		goto err_free_mem_region;
 +	}
 +
 +	ret = platform_device_add(mali->dev);
 +	if (ret) {
 +		pr_err("Couldn't add our device\n");
-+		goto err_free_resources;
++		goto err_free_mem_region;
 +	}
 +
 +	of_node_put(np);
@@ -289,8 +290,6 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +
 +	return 0;
 +
-+err_free_resources:
-+	kfree(mali_res);
 +err_free_mem_region:
 +	of_reserved_mem_device_release(dev);
 +err_free_pdev:
