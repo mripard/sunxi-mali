@@ -13,7 +13,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 
 --- /dev/null
 +++ b/src/devicedrv/mali/platform/sunxi/sunxi.c
-@@ -0,0 +1,322 @@
+@@ -0,0 +1,323 @@
 +
 +#include <linux/clk.h>
 +#include <linux/clkdev.h>
@@ -276,8 +276,6 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +		goto err_free_mem_region;
 +	}
 +
-+	of_node_put(np);
-+
 +#ifdef CONFIG_PM_RUNTIME
 +#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37))
 +	pm_runtime_set_autosuspend_delay(&mali->dev->dev, 1000);
@@ -314,12 +312,14 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +
 +int mali_platform_device_unregister(void)
 +{
++	struct device *dev = &mali->dev->dev;
 +
 +#ifdef CONFIG_PM_RUNTIME
-+	pm_runtime_disable(&mali->dev->dev);
++	pm_runtime_disable(dev);
 +#endif
 +
 +	platform_device_del(mali->dev);
++	of_node_put(dev->of_node);
 +	platform_device_put(mali->dev);
 +
 +	if (!mali->reset) {
