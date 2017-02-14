@@ -293,7 +293,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +err_free_pdev:
 +	platform_device_put(mali->dev);
 +err_put_reset:
-+	if (!mali->reset) {
++	if (!IS_ERR(mali->reset)) {
 +		reset_control_assert(mali->reset);
 +		reset_control_put(mali->reset);
 +	}
@@ -324,7 +324,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	of_node_put(dev->of_node);
 +	platform_device_put(mali->dev);
 +
-+	if (!mali->reset) {
++	if (!IS_ERR(mali->reset)) {
 +		reset_control_assert(mali->reset);
 +		reset_control_put(mali->reset);
 +	}
