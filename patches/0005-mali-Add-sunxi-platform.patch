@@ -13,7 +13,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 
 --- /dev/null
 +++ b/src/devicedrv/mali/platform/sunxi/sunxi.c
-@@ -0,0 +1,325 @@
+@@ -0,0 +1,328 @@
 +
 +#include <linux/clk.h>
 +#include <linux/clkdev.h>
@@ -35,6 +35,9 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +#include <linux/clk/clk-conf.h>
 +
 +#include <linux/mali/mali_utgard.h>
++
++/* This is a hack, really, and should be fixed. Eventually. */
++#include <../mm/cma.h>
 +
 +#include "mali_kernel_linux.h"
 +
@@ -231,10 +234,10 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +		goto err_free_pdev;
 +	}
 +
-+	cma = dev_get_cma_area(dev);
-+	mali_gpu_data.fb_start = cma_get_base(cma);
-+	mali_gpu_data.fb_size = cma_get_size(cma);
-+	mali_gpu_data.shared_mem_size = cma_get_size(cma);
++	cma = dev->cma_area;
++	mali_gpu_data.fb_start = PFN_PHYS(cma->base_pfn);
++	mali_gpu_data.fb_size = cma->count << PAGE_SHIFT;
++	mali_gpu_data.shared_mem_size = cma->count << PAGE_SHIFT;
 +
 +	if ((irq_pp1 >= 0) && (irq_ppmmu1 >= 0))
 +		mali_res = mali_create_mp2_resources(res.start,
