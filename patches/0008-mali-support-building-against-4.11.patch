@@ -1,0 +1,18 @@
+diff -Naur r6p0-old/src/devicedrv/mali/linux/mali_memory.c r6p0/src/devicedrv/mali/linux/mali_memory.c
+--- r6p0-old/src/devicedrv/mali/linux/mali_memory.c	2017-03-18 07:34:58.637450575 +0800
++++ r6p0/src/devicedrv/mali/linux/mali_memory.c	2017-03-18 07:37:24.640028038 +0800
+@@ -54,8 +54,14 @@
+ 	vma->vm_private_data = NULL;
+ }
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
++static int mali_mem_vma_fault(struct vm_fault *vmf)
++{
++	struct vm_area_struct *vma = vmf->vma;
++#else
+ static int mali_mem_vma_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+ {
++#endif
+ 	mali_mem_allocation *alloc = (mali_mem_allocation *)vma->vm_private_data;
+ 	mali_mem_backend *mem_bkend = NULL;
+ 	int ret;
