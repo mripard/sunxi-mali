@@ -13,13 +13,13 @@ Signed-off-by: Jonathan Liu <net147@gmail.com>
  	vma->vm_private_data = NULL;
  }
  
-+#if LINUX_VERSION_CODE > KERNEL_VERSION(4, 10, 0)
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 +static int mali_mem_vma_fault(struct vm_fault *vmf)
 +#else
  static int mali_mem_vma_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
 +#endif
  {
-+#if LINUX_VERSION_CODE > KERNEL_VERSION(4, 10, 0)
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 +	struct vm_area_struct *vma = vmf->vma;
 +#endif
  	mali_mem_allocation *alloc = (mali_mem_allocation *)vma->vm_private_data;
