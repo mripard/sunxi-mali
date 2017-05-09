@@ -1,7 +1,0 @@
-0001-makefile-Add-install-target-and-build-the-module-by-.patch
-0002-mali-Support-building-against-4.6.patch
-0003-mali-Support-building-against-4.8.patch
-0004-mali-Print-the-mali-version-at-probe.patch
-0005-mali-Add-sunxi-platform.patch
-0006-mali-Allow-devfreq-to-run-without-power-models.patch
-0007-mali-support-building-against-4.10.patch
