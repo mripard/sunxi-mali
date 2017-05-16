@@ -18,13 +18,13 @@ Signed-off-by: Thibaud Cornic <thibaud_cornic@sigmadesigns.com>
 Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
 Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 ---
- driver/src/devicedrv/mali/common/mali_gp_job.c | 4 ++--
+ src/devicedrv/mali/common/mali_gp_job.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/driver/src/devicedrv/mali/common/mali_gp_job.c b/driver/src/devicedrv/mali/common/mali_gp_job.c
+diff --git a/src/devicedrv/mali/common/mali_gp_job.c b/src/devicedrv/mali/common/mali_gp_job.c
 index 8dd19cb2df09..fb8dcd8292e1 100755
---- a/driver/src/devicedrv/mali/common/mali_gp_job.c
-+++ b/driver/src/devicedrv/mali/common/mali_gp_job.c
+--- a/src/devicedrv/mali/common/mali_gp_job.c
++++ b/src/devicedrv/mali/common/mali_gp_job.c
 @@ -133,7 +133,7 @@ struct mali_gp_job *mali_gp_job_create(struct mali_session_data *session, _mali_
  				goto fail1;
  			}
