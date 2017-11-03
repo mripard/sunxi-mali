@@ -1,15 +1,23 @@
 # Mali support for Allwinner / Sunxi platform for mainline Linux
 
-In order to get GPU support to work on your Allwinner platform, you will need:
+Here is the driver needed in order to support ARM's Mali GPU found on the Allwinner
+SoC, using a mainline (ie. Torvalds') kernel.
 
-1. The kernel-side driver, which is in this repository
-2. The [Device Tree description of the GPU](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/devicetree/bindings/gpu/arm,mali-utgard.txt)
-3. The userspace blob, available on Free Electrons [mali-blobs GitHub](https://github.com/free-electrons/mali-blobs)  repository
+## Adding the Mali to your Device Tree
 
-## Setting it up
+If that isn't already the case, you'll need to edit your Device Tree file to
+add a node following the [Device Tree binding](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/devicetree/bindings/gpu/arm,mali-utgard.txt)
 
-1. Add device tree definition to device's devicetree
-2. Compile the kernel module (from this repository):
+Don't forget to submit your change afterward to the Linux kernel mailing list..
+
+## Building the kernel module
+
+In order to build the kernel module, you'll need a functional DRM driver. If
+you have that already, you'll need the options `CONFIG_CMA` and `CONFIG_DMA_CMA`
+enabled in your kernel configuration.
+
+Then, you can compile the module using the following commands:
+
 ```
 git clone https://github.com/mripard/sunxi-mali.git
 cd sunxi-mali
@@ -19,11 +27,36 @@ export INSTALL_MOD_PATH=$TARGET_DIR
 ./build.sh -r r6p2 -b
 ./build.sh -r r6p2 -i
 ```
-It should install the mali.ko Linux kernel module into the target filesystem.
 
-3. Fetch the OpenGL userspace blobs that match your setup (either fbdev or X11-dma-buf variant)
+It should install the mali.ko Linux kernel module into the target filesystem,
+and the module should be loaded automatically. If it isn't, modprobe will help.
+
+## Installing the user-space components
+
+Once the driver is compiled and loaded, you'll need to integrate the OpenGL ES
+implementation.
+
+In order to do that, you'll need to do the following commands (assuming you
+want the fbdev version over the X11-dma-buf one).
+
 ```
 git clone https://github.com/free-electrons/mali-blobs.git
 cd mali-blobs
 cp -a r6p2/fbdev/lib/lib_fb_dev/lib* $TARGET_DIR/usr/lib
 ```
+
+## fbdev quirks
+
+The fbdev variants are meant to deal with applications using the legacy fbdev
+interface. The most widely used example would be QT. In such a case, you'll
+need to do a few more things in order to have a working setup.
+
+The first thing needed would be to add a reserved memory region, shared by the
+Display Engine and the Mali GPU nodes.
+
+The Mali blob then uses framebuffer panning to implement double-buffering.
+Therefore, the kernel needs to allocate buffers twice the size of the actual
+resolution, which it doesn't by default. For you to change that, you'll need to
+change either the `CONFIG_DRM_OVERALLOC` option or the
+`drm_kms_helper.drm_fbdev_overalloc` parameter to 200.
+
