@@ -27,7 +27,7 @@ index 44c7bb83981a..2fee5e096b51 100755
  clean:
  	$(MAKE) ARCH=$(ARCH) -C $(KDIR) M=$(CURDIR) clean
  
-+install: modules
++install:
 +	$(MAKE) ARCH=$(ARCH) -C $(KDIR) M=$(CURDIR) INSTALL_MOD_PATH=$(INSTALL_MOD_PATH) modules_install
 +
  kernelrelease:
