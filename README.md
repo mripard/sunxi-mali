@@ -57,6 +57,6 @@ Display Engine and the Mali GPU nodes.
 The Mali blob then uses framebuffer panning to implement double-buffering.
 Therefore, the kernel needs to allocate buffers twice the size of the actual
 resolution, which it doesn't by default. For you to change that, you'll need to
-change either the `CONFIG_DRM_OVERALLOC` option or the
+change either the `CONFIG_DRM_FBDEV_OVERALLOC` option or the
 `drm_kms_helper.drm_fbdev_overalloc` parameter to 200.
 
