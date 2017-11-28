@@ -81,3 +81,5 @@ resolution, which it doesn't by default. For you to change that, you'll need to
 change either the `CONFIG_DRM_FBDEV_OVERALLOC` option or the
 `drm_kms_helper.drm_fbdev_overalloc` parameter to 200.
 
+To avoid screen tearing, set the `FRONTBUFFER_LOCKING` environment variable to 1.
+This environment variable is used only by the Mali fbdev blob.
