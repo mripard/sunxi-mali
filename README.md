@@ -48,8 +48,9 @@ cp -a r6p2/fbdev/lib/lib_fb_dev/lib* $TARGET_DIR/usr/lib
 ## fbdev quirks
 
 The fbdev variants are meant to deal with applications using the legacy fbdev
-interface. The most widely used example would be QT. In such a case, you'll
-need to do a few more things in order to have a working setup.
+interface. The most widely used example would be [Qt](https://www.qt.io/). In
+such a case, you'll need to do a few more things in order to have a working
+setup.
 
 The first thing needed would be to add a reserved memory region, shared by the
 Display Engine and the Mali GPU nodes. The binding is defined
