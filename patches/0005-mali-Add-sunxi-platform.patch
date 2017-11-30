@@ -13,7 +13,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 
 --- /dev/null
 +++ b/src/devicedrv/mali/platform/sunxi/sunxi.c
-@@ -0,0 +1,324 @@
+@@ -0,0 +1,325 @@
 +
 +#include <linux/clk.h>
 +#include <linux/clkdev.h>
@@ -225,6 +225,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	dev->of_node = np;
 +	dev->dma_mask = &dev->coherent_dma_mask;
 +	dev->coherent_dma_mask = DMA_BIT_MASK(32);
++	dev->bus = &platform_bus_type;
 +
 +	ret = of_reserved_mem_device_init(&mali->dev->dev);
 +	if (!ret) {
