@@ -13,7 +13,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 
 --- /dev/null
 +++ b/src/devicedrv/mali/platform/sunxi/sunxi.c
-@@ -0,0 +1,328 @@
+@@ -0,0 +1,324 @@
 +
 +#include <linux/clk.h>
 +#include <linux/clkdev.h>
@@ -118,7 +118,6 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	struct resource *mali_res = NULL, res;
 +	struct device_node *np;
 +	struct device *dev;
-+	struct cma *cma;
 +	int ret, len;
 +
 +	np = of_find_matching_node(NULL, mali_dt_ids);
@@ -228,16 +227,14 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	dev->coherent_dma_mask = DMA_BIT_MASK(32);
 +
 +	ret = of_reserved_mem_device_init(&mali->dev->dev);
-+	if (ret < 0) {
-+		pr_err("Couldn't reserve our memory region\n");
-+		ret = -EINVAL;
-+		goto err_free_pdev;
++	if (!ret) {
++		struct cma *cma = dev->cma_area;
++		mali_gpu_data.fb_start = PFN_PHYS(cma->base_pfn);
++		mali_gpu_data.fb_size = cma->count << PAGE_SHIFT;
++		mali_gpu_data.shared_mem_size = cma->count << PAGE_SHIFT;
++	} else {
++		pr_err("Couldn't reserve our memory region. fbdev will not work.\n");
 +	}
-+
-+	cma = dev->cma_area;
-+	mali_gpu_data.fb_start = PFN_PHYS(cma->base_pfn);
-+	mali_gpu_data.fb_size = cma->count << PAGE_SHIFT;
-+	mali_gpu_data.shared_mem_size = cma->count << PAGE_SHIFT;
 +
 +	if ((irq_pp1 >= 0) && (irq_ppmmu1 >= 0))
 +		mali_res = mali_create_mp2_resources(res.start,
@@ -293,7 +290,6 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +
 +err_free_mem_region:
 +	of_reserved_mem_device_release(dev);
-+err_free_pdev:
 +	platform_device_put(mali->dev);
 +err_put_reset:
 +	if (!IS_ERR_OR_NULL(mali->reset)) {
