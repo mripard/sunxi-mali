@@ -108,7 +108,7 @@ Signed-off-by: John Stultz <john.stultz@linaro.org>
  	MALI_DEBUG_ASSERT_POINTER(tim);
 -	tim->timer.data = (unsigned long)data;
 -	tim->timer.function = (timer_timeout_function_t)callback;
-+	timer_setup(&tim->timer, callback, 0);
++	__setup_timer(&tim->timer, callback, &tim->timer, 0);
  }
  
  void _mali_osk_timer_term(_mali_osk_timer_t *tim)
