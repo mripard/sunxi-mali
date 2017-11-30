@@ -15,10 +15,10 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
  r6p2/src/devicedrv/mali/linux/mali_devfreq.c | 7 +++++--
  1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/r6p2/src/devicedrv/mali/linux/mali_devfreq.c b/r6p2/src/devicedrv/mali/linux/mali_devfreq.c
+diff --git a/src/devicedrv/mali/linux/mali_devfreq.c b/src/devicedrv/mali/linux/mali_devfreq.c
 index 0b0ba1481eed..c3a2636e6635 100755
---- a/r6p2/src/devicedrv/mali/linux/mali_devfreq.c
-+++ b/r6p2/src/devicedrv/mali/linux/mali_devfreq.c
+--- a/src/devicedrv/mali/linux/mali_devfreq.c
++++ b/src/devicedrv/mali/linux/mali_devfreq.c
 @@ -232,8 +232,11 @@ int mali_devfreq_init(struct mali_device *mdev)
  	dp->get_cur_freq = mali_devfreq_cur_freq;
  	dp->exit = mali_devfreq_exit;
