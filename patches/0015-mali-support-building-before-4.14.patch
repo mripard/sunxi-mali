@@ -1,0 +1,32 @@
+mali: support building before 4.14
+
+In 0013-mali-support-building-against-4.15.patch 
+has been used timer_setup api.
+This api has been introduced only in 4.14.0 version,
+so compiling with version < 4.14.0 fails.
+
+Added function locally to mali_osk_timers.c compiled 
+if version < 4.14.0
+
+Signed-off-by: Giulio Benetti <giulio.benetti@micronovasrl.com>
+diff --git a/src/devicedrv/mali/linux/mali_osk_timers.c b/src/devicedrv/mali/linux/mali_osk_timers.c
+index c9c6f49..bad78ba 100755
+--- a/src/devicedrv/mali/linux/mali_osk_timers.c
++++ b/src/devicedrv/mali/linux/mali_osk_timers.c
+@@ -18,6 +18,16 @@
+ #include "mali_osk.h"
+ #include "mali_kernel_common.h"
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
++static inline void timer_setup(struct timer_list *timer,
++			       void (*callback)(struct timer_list *),
++			       unsigned int flags)
++{
++	__setup_timer(timer, (TIMER_FUNC_TYPE)callback,
++		      (TIMER_DATA_TYPE)timer, flags);
++}
++#endif
++
+ typedef void (*timer_timeout_function_t)(unsigned long);
+ 
+ _mali_osk_timer_t *_mali_osk_timer_init(void)
