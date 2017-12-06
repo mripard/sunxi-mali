@@ -72,7 +72,14 @@ do
 	    install_driver $RELEASE
 	    ;;
 	r)
-	    RELEASE=$OPTARG
+	    case $OPTARG in
+		r6p0 | r6p2)
+		    RELEASE=$OPTARG
+		    ;;
+		*)
+		    echo "Unsupported release"
+		    exit 1
+	    esac
 	    ;;
 	u)
 	    echo "unapplying patches"
