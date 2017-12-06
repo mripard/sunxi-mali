@@ -55,7 +55,7 @@ install_driver() {
     make $BUILD_OPTS -C $driver_dir install
 }
 
-while getopts "r:aubi" opt
+while getopts "r:aubit" opt
 do
     case $opt in
 	a)
@@ -84,6 +84,11 @@ do
 	u)
 	    echo "unapplying patches"
 	    unapply_patches $(pwd)/patches $RELEASE
+	    ;;
+	t)
+	    echo "Generating travis-ci YAML"
+	    cat travis-base.yml > .travis.yml
+	    ./travis.py >> .travis.yml
 	    ;;
 	\?)
 	    echo "invalid option -$OPTARG"
