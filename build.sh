@@ -14,7 +14,7 @@ apply_patches() {
 
     for patch in $1/*.patch;
     do
-	patch -p1 < $patch
+	patch -sf -p1 < $patch
 	if [ $? -ne 0 ]; then
 		echo "Error applying patch $patch"
 		exit 1
