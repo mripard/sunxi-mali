@@ -15,6 +15,10 @@ apply_patches() {
     for patch in $1/*.patch;
     do
 	patch -p1 < $patch
+	if [ $? -ne 0 ]; then
+		echo "Error applying patch $patch"
+		exit 1
+	fi
     done
 
     popd
@@ -37,6 +41,10 @@ build_driver() {
     local driver_dir=$(pwd)/$RELEASE/src/devicedrv/mali/
 
     make $BUILD_OPTS -C $driver_dir
+    if [ $? -ne 0 ]; then
+	    echo "Error building the driver"
+	    exit 1
+    fi
 
     cp $driver_dir/mali.ko .
 }
