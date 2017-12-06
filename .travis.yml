@@ -1,0 +1,50 @@
+language: c
+
+addons:
+  apt:
+    packages:
+      - gcc-arm-linux-gnueabihf
+      - patch
+      - wget
+
+env:
+  global:
+    - CROSS_COMPILE=arm-linux-gnueabihf-
+    - KDIR=/tmp/kernel
+
+install:
+  - if [[ "${KERNEL_VERSION}" == *-rc* ]]; then
+      KERNEL_URL=https://git.kernel.org/torvalds/t/linux-${KERNEL_VERSION}.tar.gz;
+    else
+      KERNEL_URL=https://www.kernel.org/pub/linux/kernel/v4.x/linux-${KERNEL_VERSION}.tar.xz;
+    fi
+  - wget -O kernel.tar.xz ${KERNEL_URL} && mkdir /tmp/kernel && tar -C /tmp/kernel --strip=1 -xf kernel.tar.xz
+
+before_script:
+  - pushd /tmp/kernel && ARCH=arm make -j $(nproc) ${KERNEL_DEFCONFIG} modules_prepare && popd
+
+script:
+  - ./build.sh -r ${MALI_VERSION} -b
+
+matrix:
+  include:
+    - env:
+      - KERNEL_VERSION: 4.4.104
+        KERNEL_DEFCONFIG: multi_v7_defconfig
+        MALI_VERSION: r6p2
+    - env:
+      - KERNEL_VERSION: 4.9.67
+        KERNEL_DEFCONFIG: multi_v7_defconfig
+        MALI_VERSION: r6p2
+    - env:
+      - KERNEL_VERSION: 4.13.16
+        KERNEL_DEFCONFIG: multi_v7_defconfig
+        MALI_VERSION: r6p2
+    - env:
+      - KERNEL_VERSION: 4.14.4
+        KERNEL_DEFCONFIG: multi_v7_defconfig
+        MALI_VERSION: r6p2
+    - env:
+      - KERNEL_VERSION: 4.15-rc2
+        KERNEL_DEFCONFIG: multi_v7_defconfig
+        MALI_VERSION: r6p2
