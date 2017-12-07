@@ -14,11 +14,24 @@ apply_patches() {
 
     for patch in $1/*.patch;
     do
-	patch $3 -p1 < $patch
+	patch -p1 < $patch
     done
 
     popd
 }
+
+unapply_patches() {
+    pushd $2
+
+    patches=($1/*.patch)
+    for ((i=${#patches[@]}-1; i>=0; i--));
+    do
+	patch -R -p1 < "${patches[$i]}"
+    done
+
+    popd
+}
+
 
 build_driver() {
     local driver_dir=$(pwd)/$RELEASE/src/devicedrv/mali/
@@ -55,7 +68,7 @@ do
 	    ;;
 	u)
 	    echo "unapplying patches"
-	    apply_patches $(pwd)/patches $RELEASE -R
+	    unapply_patches $(pwd)/patches $RELEASE
 	    ;;
 	\?)
 	    echo "invalid option -$OPTARG"

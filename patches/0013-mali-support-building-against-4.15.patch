@@ -9,8 +9,8 @@ Signed-off-by: John Stultz <john.stultz@linaro.org>
  src/devicedrv/mali/common/mali_group.c          | 8 +++++---
  src/devicedrv/mali/common/mali_osk_types.h      | 8 +++++++-
  src/devicedrv/mali/linux/mali_memory_os_alloc.c | 2 +-
- src/devicedrv/mali/linux/mali_osk_timers.c      | 8 +-------
- 5 files changed, 15 insertions(+), 13 deletions(-)
+ src/devicedrv/mali/linux/mali_osk_timers.c      | 16 ++++++++++------
+ 5 files changed, 24 insertions(+), 12 deletions(-)
 
 --- a/src/devicedrv/mali/common/mali_control_timer.c
 +++ b/src/devicedrv/mali/common/mali_control_timer.c
@@ -85,14 +85,23 @@ Signed-off-by: John Stultz <john.stultz@linaro.org>
  #if defined(CONFIG_ARM) && !defined(CONFIG_ARM_LPAE)
 --- a/src/devicedrv/mali/linux/mali_osk_timers.c
 +++ b/src/devicedrv/mali/linux/mali_osk_timers.c
-@@ -18,16 +18,11 @@
+@@ -18,16 +18,21 @@
  #include "mali_osk.h"
  #include "mali_kernel_common.h"
  
 -struct _mali_osk_timer_t_struct {
 -	struct timer_list timer;
 -};
--
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
++static inline void timer_setup(struct timer_list *timer,
++			       void (*callback)(struct timer_list *),
++			       unsigned int flags)
++{
++	__setup_timer(timer, (TIMER_FUNC_TYPE)callback,
++		      (TIMER_DATA_TYPE)timer, flags);
++}
++#endif
+
  typedef void (*timer_timeout_function_t)(unsigned long);
  
  _mali_osk_timer_t *_mali_osk_timer_init(void)
