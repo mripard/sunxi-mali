@@ -85,7 +85,7 @@ Signed-off-by: John Stultz <john.stultz@linaro.org>
  #if defined(CONFIG_ARM) && !defined(CONFIG_ARM_LPAE)
 --- a/src/devicedrv/mali/linux/mali_osk_timers.c
 +++ b/src/devicedrv/mali/linux/mali_osk_timers.c
-@@ -18,16 +18,21 @@
+@@ -18,16 +18,25 @@
  #include "mali_osk.h"
  #include "mali_kernel_common.h"
  
@@ -93,6 +93,10 @@ Signed-off-by: John Stultz <john.stultz@linaro.org>
 -	struct timer_list timer;
 -};
 +#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
++
++#define TIMER_DATA_TYPE		unsigned long
++#define TIMER_FUNC_TYPE		void (*)(TIMER_DATA_TYPE)
++
 +static inline void timer_setup(struct timer_list *timer,
 +			       void (*callback)(struct timer_list *),
 +			       unsigned int flags)
@@ -101,7 +105,7 @@ Signed-off-by: John Stultz <john.stultz@linaro.org>
 +		      (TIMER_DATA_TYPE)timer, flags);
 +}
 +#endif
-
+ 
  typedef void (*timer_timeout_function_t)(unsigned long);
  
  _mali_osk_timer_t *_mali_osk_timer_init(void)
@@ -111,7 +115,7 @@ Signed-off-by: John Stultz <john.stultz@linaro.org>
  	return t;
  }
  
-@@ -65,8 +60,7 @@ mali_bool _mali_osk_timer_pending(_mali_
+@@ -65,8 +74,7 @@ mali_bool _mali_osk_timer_pending(_mali_
  void _mali_osk_timer_setcallback(_mali_osk_timer_t *tim, _mali_osk_timer_callback_t callback, void *data)
  {
  	MALI_DEBUG_ASSERT_POINTER(tim);
