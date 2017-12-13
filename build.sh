@@ -55,7 +55,13 @@ install_driver() {
     make $BUILD_OPTS -C $driver_dir install
 }
 
-while getopts "r:aubit" opt
+clean_driver() {
+    local driver_dir=$(pwd)/$RELEASE/src/devicedrv/mali/
+
+    make $BUILD_OPTS -C $driver_dir clean
+}
+
+while getopts "r:aubcit" opt
 do
     case $opt in
 	a)
@@ -66,6 +72,11 @@ do
 	    echo "building..."
 	    apply_patches $(pwd)/patches $RELEASE
 	    build_driver $RELEASE
+	    ;;
+	c)
+	    echo "cleaning..."
+	    unapply_patches $(pwd)/patches $RELEASE
+	    clean_driver $RELEASE
 	    ;;
 	i)
 	    echo "installing..."
