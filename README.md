@@ -1,4 +1,4 @@
-# Mali support for Allwinner / Sunxi platform for mainline Linux
+# Mali support for Allwinner / sunXi platform for mainline Linux
 
 Here is the driver needed in order to support ARM's Mali GPU found on the Allwinner
 SoC, using a mainline (ie. Torvalds') kernel.
