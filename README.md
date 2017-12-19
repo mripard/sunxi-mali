@@ -76,11 +76,13 @@ You'll obviously need to adjust the size depending on your needs.
 You'll then need to add the `memory-region` property pointing to that CMA
 region in both the display engine and Mali nodes.
 
-The Mali blob then uses framebuffer panning to implement double-buffering.
-Therefore, the kernel needs to allocate buffers twice the size of the actual
-resolution, which it doesn't by default. For you to change that, you'll need to
-change either the `CONFIG_DRM_FBDEV_OVERALLOC` option or the
-`drm_kms_helper.drm_fbdev_overalloc` parameter to 200.
+The Mali blob then uses framebuffer panning to implement multiple buffering.
+Therefore, the kernel needs to allocate buffers at least twice the size (for
+double buffering) of the actual resolution, which it doesn't by default. For
+you to change that, you'll need to change either the
+`CONFIG_DRM_FBDEV_OVERALLOC` option or the `drm_kms_helper.drm_fbdev_overalloc`
+parameter to 100 times the number of simultaneous buffers you want to use (so
+200 for double buffering, 300 for triple buffering, etc.).
 
 To avoid screen tearing, set the `FRONTBUFFER_LOCKING` environment variable to 1.
 This environment variable is used only by the Mali fbdev blob.
