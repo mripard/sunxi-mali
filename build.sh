@@ -1,7 +1,7 @@
 #!/bin/bash
 
 RELEASE=r6p0
-
+PARALLEL=-j$(nproc)
 BUILD_OPTS="USING_UMP=0
 	    BUILD=release
 	    USING_PROFILING=0
@@ -40,7 +40,7 @@ unapply_patches() {
 build_driver() {
     local driver_dir=$(pwd)/$RELEASE/src/devicedrv/mali/
 
-    make $BUILD_OPTS -C $driver_dir
+    make PARALLEL=$PARALLEL $BUILD_OPTS -C $driver_dir
     if [ $? -ne 0 ]; then
 	    echo "Error building the driver"
 	    exit 1
@@ -52,16 +52,16 @@ build_driver() {
 install_driver() {
     local driver_dir=$(pwd)/$RELEASE/src/devicedrv/mali/
 
-    make $BUILD_OPTS -C $driver_dir install
+    make PARALLEL=$PARALLEL $BUILD_OPTS -C $driver_dir install
 }
 
 clean_driver() {
     local driver_dir=$(pwd)/$RELEASE/src/devicedrv/mali/
 
-    make $BUILD_OPTS -C $driver_dir clean
+    make PARALLEL=$PARALLEL $BUILD_OPTS -C $driver_dir clean
 }
 
-while getopts "r:aubcit" opt
+while getopts "j:r:aubcit" opt
 do
     case $opt in
 	a)
@@ -81,6 +81,9 @@ do
 	i)
 	    echo "installing..."
 	    install_driver $RELEASE
+	    ;;
+	j)
+	    PARALLEL=-j$OPTARG
 	    ;;
 	r)
 	    case $OPTARG in
