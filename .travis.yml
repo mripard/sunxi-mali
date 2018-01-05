@@ -29,15 +29,15 @@ script:
 matrix:
   include:
     - env:
-      - KERNEL_VERSION: 4.4.109
+      - KERNEL_VERSION: 4.4.110
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p2
     - env:
-      - KERNEL_VERSION: 4.9.74
+      - KERNEL_VERSION: 4.9.75
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p2
     - env:
-      - KERNEL_VERSION: 4.14.11
+      - KERNEL_VERSION: 4.14.12
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p2
     - env:
