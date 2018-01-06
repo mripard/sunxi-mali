@@ -31,6 +31,14 @@ export INSTALL_MOD_PATH=$TARGET_DIR
 It should install the mali.ko Linux kernel module into the target filesystem,
 and the module should be loaded automatically. If it isn't, modprobe will help.
 
+Module is compiled using parallel build by default.
+To override jobs number, use -j option as follows:
+
+```
+./build.sh -r r6p2 -j 8 -b
+```
+Where 8 is the number of simultaneous jobs.
+
 ## Installing the user-space components
 
 Once the driver is compiled and loaded, you'll need to integrate the OpenGL ES
