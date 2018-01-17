@@ -13,7 +13,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 
 --- /dev/null
 +++ b/src/devicedrv/mali/platform/sunxi/sunxi.c
-@@ -0,0 +1,325 @@
+@@ -0,0 +1,361 @@
 +
 +#include <linux/clk.h>
 +#include <linux/clkdev.h>
@@ -52,13 +52,45 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +
 +struct mali *mali;
 +
++#define MALI_GPU_RESOURCE_PMU(pmu_addr, pmu_irq)	\
++	{					\
++		.name = "Mali_PMU",		\
++		.flags = IORESOURCE_MEM,	\
++		.start = pmu_addr,		\
++		.end =   pmu_addr + 0x100,	\
++	},					\
++	{					\
++		.name = "Mali_PMU_IRQ",		\
++		.flags = IORESOURCE_IRQ,	\
++		.start = pmu_irq,		\
++		.end =   pmu_irq,		\
++	},
++
++#define MALI_GPU_RESOURCES_MALI400_MP1_PMU(base_addr, pmu_irq,		\
++					   gp_irq, gp_mmu_irq,		\
++					   pp0_irq, pp0_mmu_irq)	\
++	MALI_GPU_RESOURCES_MALI400_MP1(base_addr, gp_irq, gp_mmu_irq,	\
++				       pp0_irq, pp0_mmu_irq)		\
++	MALI_GPU_RESOURCE_PMU(base_addr + MALI_OFFSET_PMU, pmu_irq)
++
++#define MALI_GPU_RESOURCES_MALI400_MP2_PMU(base_addr, pmu_irq,		\
++					   gp_irq, gp_mmu_irq,		\
++					   pp0_irq, pp0_mmu_irq,	\
++					   pp1_irq, pp1_mmu_irq)	\
++	MALI_GPU_RESOURCES_MALI400_MP2(base_addr, gp_irq, gp_mmu_irq,	\
++				       pp0_irq, pp0_mmu_irq,		\
++				       pp1_irq, pp1_mmu_irq)		\
++	MALI_GPU_RESOURCE_PMU(base_addr + MALI_OFFSET_PMU, pmu_irq)
++
 +struct resource *mali_create_mp1_resources(unsigned long address,
++					   int irq_pmu,
 +					   int irq_gp, int irq_gpmmu,
 +					   int irq_pp0, int irq_ppmmu0,
 +					   int *len)
 +{
 +	struct resource target[] = {
 +		MALI_GPU_RESOURCES_MALI400_MP1_PMU(address,
++						   irq_pmu,
 +						   irq_gp, irq_gpmmu,
 +						   irq_pp0, irq_ppmmu0)
 +	};
@@ -76,6 +108,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +}
 +
 +struct resource *mali_create_mp2_resources(unsigned long address,
++					   int irq_pmu,
 +					   int irq_gp, int irq_gpmmu,
 +					   int irq_pp0, int irq_ppmmu0,
 +					   int irq_pp1, int irq_ppmmu1,
@@ -83,6 +116,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +{
 +	struct resource target[] = {
 +		MALI_GPU_RESOURCES_MALI400_MP2_PMU(address,
++						   irq_pmu,
 +						   irq_gp, irq_gpmmu,
 +						   irq_pp0, irq_ppmmu0,
 +						   irq_pp1, irq_ppmmu1)
@@ -239,12 +273,14 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +
 +	if ((irq_pp1 >= 0) && (irq_ppmmu1 >= 0))
 +		mali_res = mali_create_mp2_resources(res.start,
++						     irq_pmu,
 +						     irq_gp, irq_gpmmu,
 +						     irq_pp0, irq_ppmmu0,
 +						     irq_pp1, irq_ppmmu1,
 +						     &len);
 +	else
 +		mali_res = mali_create_mp1_resources(res.start,
++						     irq_pmu,
 +						     irq_gp, irq_gpmmu,
 +						     irq_pp0, irq_ppmmu0,
 +						     &len);
