@@ -12,14 +12,11 @@ BUILD_OPTS="USING_UMP=0
 apply_patches() {
     pushd $2
 
-    for patch in $1/*.patch;
-    do
-	patch -sf -p1 < $patch
-	if [ $? -ne 0 ]; then
-		echo "Error applying patch $patch"
-		exit 1
-	fi
-    done
+    quilt push -a
+    if [ $? -ne 0 ]; then
+        echo "Error applying patch $patch"
+        exit 1
+    fi
 
     popd
 }
@@ -27,11 +24,11 @@ apply_patches() {
 unapply_patches() {
     pushd $2
 
-    patches=($1/*.patch)
-    for ((i=${#patches[@]}-1; i>=0; i--));
-    do
-	patch -R -p1 < "${patches[$i]}"
-    done
+    quilt pop -a
+    if [ $? -ne 0 ]; then
+        echo "Error unapplying patch $patch"
+        exit 1
+    fi
 
     popd
 }

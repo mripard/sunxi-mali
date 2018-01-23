@@ -1,0 +1,10 @@
+0001-makefile-Add-install-target-and-build-the-module-by-.patch
+0002-mali-Support-building-against-4.6.patch
+0003-mali-Support-building-against-4.8.patch
+0004-mali-Print-the-mali-version-at-probe.patch
+0005-mali-Add-sunxi-platform.patch
+0007-mali-support-building-against-4.10.patch
+0008-mali-support-building-against-4.11.patch
+0010-mali-support-building-against-4.12.patch
+0011-mali-support-building-against-4.13.patch
+0012-mali-support-building-against-4.14.patch
