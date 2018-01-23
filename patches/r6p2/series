@@ -3,12 +3,12 @@
 0003-mali-Support-building-against-4.8.patch
 0004-mali-Print-the-mali-version-at-probe.patch
 0005-mali-Add-sunxi-platform.patch
-0006-mali-Allow-devfreq-to-run-without-power-models.patch
+r6p2/0006-mali-Allow-devfreq-to-run-without-power-models.patch
 0007-mali-support-building-against-4.10.patch
 0008-mali-support-building-against-4.11.patch
-0009-mali-Fix-user-memory-domain-fault.patch
+r6p2/0009-mali-Fix-user-memory-domain-fault.patch
 0010-mali-support-building-against-4.12.patch
-0011-mali-support-building-against-4.13.patch
+r6p2/0011-mali-support-building-against-4.13.patch
 0012-mali-support-building-against-4.14.patch
-0013-mali-support-building-against-4.15.patch
-0014-mali-Make-devfreq-optional.patch
+r6p2/0013-mali-support-building-against-4.15.patch
+r6p2/0014-mali-Make-devfreq-optional.patch
