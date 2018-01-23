@@ -9,3 +9,4 @@ r6p0/0009-mali-Fix-user-memory-domain-fault.patch
 0010-mali-support-building-against-4.12.patch
 r6p0/0011-mali-support-building-against-4.13.patch
 0012-mali-support-building-against-4.14.patch
+r6p0/0013-mali-support-building-against-4.15.patch
