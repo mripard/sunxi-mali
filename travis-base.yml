@@ -5,6 +5,7 @@ addons:
     packages:
       - gcc-arm-linux-gnueabihf
       - patch
+      - quilt
       - wget
 
 env:
