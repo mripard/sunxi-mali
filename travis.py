@@ -33,7 +33,7 @@ versions.reverse()
 
 print("matrix:")
 print("  include:")
-for release in ("r6p2", ):
+for release in ("r6p0", "r6p2", ):
     for defconfig in ("multi_v7_defconfig", ):
         for version in versions:
             print("    - env:")
