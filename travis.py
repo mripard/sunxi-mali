@@ -34,8 +34,11 @@ versions.reverse()
 print("matrix:")
 print("  include:")
 for release in ("r6p0", "r6p2", ):
-    for defconfig in ("multi_v7_defconfig", ):
+    for defconfig in ("multi_v7_defconfig", "sunxi_defconfig", ):
         for version in versions:
+            if version.startswith("4.4") and defconfig is "sunxi_defconfig":
+                continue
+
             print("    - env:")
             print("      - KERNEL_VERSION: %s" % version)
             print("        KERNEL_DEFCONFIG: %s" % defconfig)
