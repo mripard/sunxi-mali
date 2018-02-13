@@ -34,11 +34,11 @@ matrix:
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p0
     - env:
-      - KERNEL_VERSION: 4.9.80
+      - KERNEL_VERSION: 4.9.81
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p0
     - env:
-      - KERNEL_VERSION: 4.14.18
+      - KERNEL_VERSION: 4.14.19
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p0
     - env:
@@ -50,11 +50,11 @@ matrix:
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p0
     - env:
-      - KERNEL_VERSION: 4.9.80
+      - KERNEL_VERSION: 4.9.81
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r6p0
     - env:
-      - KERNEL_VERSION: 4.14.18
+      - KERNEL_VERSION: 4.14.19
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r6p0
     - env:
@@ -70,11 +70,11 @@ matrix:
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p2
     - env:
-      - KERNEL_VERSION: 4.9.80
+      - KERNEL_VERSION: 4.9.81
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p2
     - env:
-      - KERNEL_VERSION: 4.14.18
+      - KERNEL_VERSION: 4.14.19
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p2
     - env:
@@ -86,11 +86,11 @@ matrix:
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p2
     - env:
-      - KERNEL_VERSION: 4.9.80
+      - KERNEL_VERSION: 4.9.81
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r6p2
     - env:
-      - KERNEL_VERSION: 4.14.18
+      - KERNEL_VERSION: 4.14.19
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r6p2
     - env:
