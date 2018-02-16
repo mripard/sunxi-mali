@@ -10,6 +10,7 @@ addons:
 
 env:
   global:
+    - ARCH=arm
     - CROSS_COMPILE=arm-linux-gnueabihf-
     - KDIR=/tmp/kernel
 
@@ -22,7 +23,7 @@ install:
   - wget -O kernel.tar.xz ${KERNEL_URL} && mkdir /tmp/kernel && tar -C /tmp/kernel --strip=1 -xf kernel.tar.xz
 
 before_script:
-  - pushd /tmp/kernel && ARCH=arm make -j $(nproc) ${KERNEL_DEFCONFIG} modules_prepare && popd
+  - pushd /tmp/kernel && make -j $(nproc) ${KERNEL_DEFCONFIG} modules_prepare && popd
 
 script:
   - ./build.sh -r ${MALI_VERSION} -b
