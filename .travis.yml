@@ -27,7 +27,7 @@ before_script:
   - make -j $(nproc) ${KERNEL_DEFCONFIG}
   - ./scripts/config -e CONFIG_CMA
   - ./scripts/config -e CONFIG_DMA_CMA
-  - make -j $(nproc) olddefconfig modules_prepare
+  - make -j $(nproc) modules_prepare
   - popd
 
 script:
