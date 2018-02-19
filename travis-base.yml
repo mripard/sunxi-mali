@@ -3,6 +3,7 @@ language: c
 addons:
   apt:
     packages:
+      - gcc-aarch64-linux-gnu
       - gcc-arm-linux-gnueabihf
       - patch
       - quilt
@@ -10,8 +11,6 @@ addons:
 
 env:
   global:
-    - ARCH=arm
-    - CROSS_COMPILE=arm-linux-gnueabihf-
     - KDIR=/tmp/kernel
 
 install:
@@ -20,9 +19,14 @@ install:
     else
       KERNEL_URL=https://www.kernel.org/pub/linux/kernel/v4.x/linux-${KERNEL_VERSION}.tar.xz;
     fi
-  - wget -O kernel.tar.xz ${KERNEL_URL} && mkdir /tmp/kernel && tar -C /tmp/kernel --strip=1 -xf kernel.tar.xz
+  - wget -O kernel.tar.xz ${KERNEL_URL} && mkdir ${KDIR} && tar -C ${KDIR} --strip=1 -xf kernel.tar.xz
 
 before_script:
+  - if [[ "${ARCH}" == "arm64" ]]; then
+      export CROSS_COMPILE=aarch64-linux-gnu-;
+    else
+      export CROSS_COMPILE=arm-linux-gnueabihf-;
+    fi
   - pushd /tmp/kernel
   - make -j $(nproc) ${KERNEL_DEFCONFIG}
   - ./scripts/config -e CONFIG_CMA

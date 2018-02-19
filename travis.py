@@ -2,6 +2,13 @@
 
 import feedparser
 
+def print_test(arch, version, defconfig, release):
+        print("    - env:")
+        print("      - ARCH: %s" % arch)
+        print("        KERNEL_VERSION: %s" % version)
+        print("        KERNEL_DEFCONFIG: %s" % defconfig)
+        print("        MALI_VERSION: %s" % release)
+
 def retrieve_versions():
     doc = feedparser.parse("https://www.kernel.org/feeds/kdist.xml")
     versions = list()
@@ -36,7 +43,6 @@ print("  include:")
 for release in ("r6p0", "r6p2", ):
     for defconfig in ("multi_v7_defconfig", "sunxi_defconfig", ):
         for version in versions:
-            print("    - env:")
-            print("      - KERNEL_VERSION: %s" % version)
-            print("        KERNEL_DEFCONFIG: %s" % defconfig)
-            print("        MALI_VERSION: %s" % release)
+            print_test("arm", version, defconfig, release)
+
+    print_test("arm64", version, "defconfig", release)
