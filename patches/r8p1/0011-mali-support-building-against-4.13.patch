@@ -1,0 +1,112 @@
+mali: support building against 4.13
+
+In 4.13, __GFP_REPEAT is replaced by __GFP_RETRY_MAYFAIL.
+
+See commit dcda9b04713c ("mm, tree wide: replace __GFP_REPEAT by
+__GFP_RETRY_MAYFAIL with more useful semantic")
+
+The wait_queue_t and associated functions are also being renamed, so take that
+into account.
+
+Signed-off-by: Jonathan Liu <net147@gmail.com>
+Signed-off-by: Maxime Ripard <maxime.ripard@bootlin.com>
+
+--- a/src/devicedrv/mali/linux/mali_kernel_linux.h
++++ b/src/devicedrv/mali/linux/mali_kernel_linux.h
+@@ -29,6 +29,10 @@ extern struct platform_device *mali_plat
+ #define CONFIG_PM_RUNTIME 1
+ #endif
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 13, 0)
++#define __GFP_REPEAT __GFP_RETRY_MAYFAIL
++#endif
++
+ #ifdef __cplusplus
+ }
+ #endif
+--- a/src/devicedrv/mali/linux/mali_internal_sync.c
++++ b/src/devicedrv/mali/linux/mali_internal_sync.c
+@@ -121,7 +121,7 @@ static void mali_internal_sync_fence_add
+ }
+ #endif
+ 
+-static int mali_internal_sync_fence_wake_up_wq(wait_queue_t *curr, unsigned mode,
++static int mali_internal_sync_fence_wake_up_wq(wait_queue_entry_t *curr, unsigned mode,
+ 		int wake_flags, void *key)
+ {
+ 	struct mali_internal_sync_fence_waiter *wait;
+@@ -130,7 +130,12 @@ static int mali_internal_sync_fence_wake
+ 	MALI_IGNORE(key);
+ 
+ 	wait = container_of(curr, struct mali_internal_sync_fence_waiter, work);
++
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 13, 0)
+ 	list_del_init(&wait->work.task_list);
++#else
++	list_del_init(&wait->work.entry);
++#endif
+ 
+ 	wait->callback(wait->work.private, wait);
+ 	return 1;
+@@ -508,7 +513,11 @@ void mali_internal_sync_fence_waiter_ini
+ 	MALI_DEBUG_ASSERT_POINTER(waiter);
+ 	MALI_DEBUG_ASSERT_POINTER(callback);
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 13, 0)
+ 	INIT_LIST_HEAD(&waiter->work.task_list);
++#else
++	INIT_LIST_HEAD(&waiter->work.entry);
++#endif
+ 	waiter->callback = callback;
+ }
+ 
+@@ -536,7 +545,7 @@ int mali_internal_sync_fence_wait_async(
+ 	err = atomic_read(&sync_fence->status);
+ 
+ 	if (0 < err)
+-		__add_wait_queue_tail(&sync_fence->wq, &waiter->work);
++		__add_wait_queue_entry_tail(&sync_fence->wq, &waiter->work);
+ 	spin_unlock_irqrestore(&sync_fence->wq.lock, flags);
+ 
+ 	if (0 > err)
+@@ -571,7 +580,7 @@ int mali_internal_sync_fence_wait_async(
+ 	err =  sync_fence->fence->ops->signaled(sync_fence->fence);
+ 
+ 	if (0 == err)
+-		__add_wait_queue_tail(&sync_fence->wq, &waiter->work);
++		__add_wait_queue_entry_tail(&sync_fence->wq, &waiter->work);
+ 	spin_unlock_irqrestore(&sync_fence->wq.lock, flags);
+ 
+ 	return err;
+@@ -588,8 +597,13 @@ int mali_internal_sync_fence_cancel_asyn
+ 	MALI_DEBUG_ASSERT_POINTER(waiter);
+ 
+ 	spin_lock_irqsave(&sync_fence->wq.lock, flags);
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 13, 0)
+ 	if (!list_empty(&waiter->work.task_list))
+ 		list_del_init(&waiter->work.task_list);
++#else
++	if (!list_empty(&waiter->work.entry))
++		list_del_init(&waiter->work.entry);
++#endif
+ 	else
+ 		ret = -ENOENT;
+ 	spin_unlock_irqrestore(&sync_fence->wq.lock, flags);
+--- a/src/devicedrv/mali/linux/mali_internal_sync.h
++++ b/src/devicedrv/mali/linux/mali_internal_sync.h
+@@ -111,8 +111,14 @@ struct mali_internal_sync_fence_waiter;
+ typedef void (*mali_internal_sync_callback_t)(struct mali_internal_sync_fence *sync_fence,
+ 		struct mali_internal_sync_fence_waiter *waiter);
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 13, 0)
++#define __add_wait_queue_entry_tail(head, new)	__add_wait_queue_tail(head, new)
++
++typedef wait_queue_t wait_queue_entry_t;
++#endif
++
+ struct mali_internal_sync_fence_waiter {
+-	wait_queue_t work;
++	wait_queue_entry_t work;
+ 	mali_internal_sync_callback_t callback;
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0)
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)

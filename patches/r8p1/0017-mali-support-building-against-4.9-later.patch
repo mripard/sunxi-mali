@@ -1,0 +1,18 @@
+r8p1: Support building against 4.9.68 and later
+
+The patches to change the struct fence status variable name got backported to
+4.9 as well. Support it.
+
+Signed-off-by: Maxime Ripard <maxime.ripard@bootlin.com>
+
+--- a/src/devicedrv/mali/linux/mali_internal_sync.c
++++ b/src/devicedrv/mali/linux/mali_internal_sync.c
+@@ -689,7 +689,7 @@ static bool mali_internal_fence_signaled
+ 
+ 	ret = parent->ops->has_signaled(sync_pt);
+ 	if (0 > ret)
+-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 68)
+ 		fence->error = ret;
+ #else
+ 		fence->status = ret;
