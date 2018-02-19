@@ -41,8 +41,8 @@ versions.reverse()
 print("matrix:")
 print("  include:")
 for release in ("r6p0", "r6p2", ):
-    for defconfig in ("multi_v7_defconfig", "sunxi_defconfig", ):
-        for version in versions:
-            print_test("arm", version, defconfig, release)
+    for version in versions:
+#        for defconfig in ("multi_v7_defconfig", "sunxi_defconfig", ):
+#            print_test("arm", version, defconfig, release)
 
-    print_test("arm64", version, "defconfig", release)
+        print_test("arm64", version, "defconfig", release)
