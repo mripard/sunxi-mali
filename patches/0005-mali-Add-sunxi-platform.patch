@@ -13,7 +13,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 
 --- /dev/null
 +++ b/src/devicedrv/mali/platform/sunxi/sunxi.c
-@@ -0,0 +1,325 @@
+@@ -0,0 +1,321 @@
 +
 +#include <linux/clk.h>
 +#include <linux/clkdev.h>
@@ -35,9 +35,6 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +#include <linux/clk/clk-conf.h>
 +
 +#include <linux/mali/mali_utgard.h>
-+
-+/* This is a hack, really, and should be fixed. Eventually. */
-+#include <../mm/cma.h>
 +
 +#include "mali_kernel_linux.h"
 +
@@ -110,7 +107,10 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +
 +int mali_platform_device_register(void)
 +{
-+	struct mali_gpu_device_data mali_gpu_data = { 0 };
++	struct mali_gpu_device_data mali_gpu_data = {
++		.fb_start		= 0,
++		.fb_size		= 0xfffff000,
++	};
 +	int irq_gp, irq_gpmmu;
 +	int irq_pp0, irq_ppmmu0;
 +	int irq_pp1 = -EINVAL, irq_ppmmu1 = -EINVAL;
@@ -228,13 +228,9 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	dev->bus = &platform_bus_type;
 +
 +	ret = of_reserved_mem_device_init(&mali->dev->dev);
-+	if (!ret) {
-+		struct cma *cma = dev->cma_area;
-+		mali_gpu_data.fb_start = PFN_PHYS(cma->base_pfn);
-+		mali_gpu_data.fb_size = cma->count << PAGE_SHIFT;
-+		mali_gpu_data.shared_mem_size = cma->count << PAGE_SHIFT;
-+	} else {
-+		pr_err("Couldn't reserve our memory region. fbdev will not work.\n");
++	if (ret && ret != -ENODEV) {
++		pr_err("Couldn't claim our reserved memory region\n");
++		goto err_free_mem_region;
 +	}
 +
 +	if ((irq_pp1 >= 0) && (irq_ppmmu1 >= 0))

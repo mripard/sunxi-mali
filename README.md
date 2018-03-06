@@ -60,31 +60,7 @@ interface. The most widely used example would be [Qt](https://www.qt.io/). In
 such a case, you'll need to do a few more things in order to have a working
 setup.
 
-The first thing needed would be to add a reserved memory region, shared by the
-Display Engine and the Mali GPU nodes. The binding is defined
-[here](https://www.kernel.org/doc/Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt).
-You'll obviously need to adjust the size depending on your needs.
-
-```
-/ {
-	reserved-memory {
-		#address-cells = <1>;
-		#size-cells = <1>;
-		ranges;
-
-		cma: cma {
-			compatible = "shared-dma-pool";
-			size = <0x4000000>;
-			reusable;
-		};
-	};
-};
-```
-
-You'll then need to add the `memory-region` property pointing to that CMA
-region in both the display engine and Mali nodes.
-
-The Mali blob then uses framebuffer panning to implement multiple buffering.
+The Mali blob uses framebuffer panning to implement multiple buffering.
 Therefore, the kernel needs to allocate buffers at least twice the size (for
 double buffering) of the actual resolution, which it doesn't by default. For
 you to change that, you'll need to change either the
