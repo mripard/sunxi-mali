@@ -14,3 +14,4 @@ r6p2/0013-mali-support-building-against-4.15.patch
 r6p2/0014-mali-Make-devfreq-optional.patch
 0015-Enable-parallel-building-passing-variable-to-Makefile.patch
 r6p2/0016-mali-support-building-against-4.16.patch
+0017-mali-Avoid-splitting-lines-across-multiple-printf-calls.patch
