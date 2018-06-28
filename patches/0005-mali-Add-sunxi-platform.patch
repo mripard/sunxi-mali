@@ -326,6 +326,13 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +		goto err_free_mem_region;
 +	}
 +
++	if (of_device_is_compatible(np, "allwinner,sun8i-h3-mali") ||
++	    of_device_is_compatible(np, "allwinner,sun50i-h5-mali"))
++		clk_set_rate(mali->core_clk, 576000000);
++	else if (of_device_is_compatible(np, "allwinner,sun7i-a20-mali") ||
++		 of_device_is_compatible(np, "allwinner,sun8i-a23-mali"))
++		clk_set_rate(mali->core_clk, 384000000);
++
 +	clk_register_clkdev(mali->core_clk, "clk_mali", NULL);
 +
 +	ret = platform_device_add_resources(mali->dev, mali_res, len);
