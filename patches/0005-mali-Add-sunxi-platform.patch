@@ -140,7 +140,6 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	{ .compatible = "allwinner,sun7i-a20-mali" },
 +	{ .compatible = "allwinner,sun8i-h3-mali" },
 +	{ .compatible = "allwinner,sun50i-h5-mali" },
-+	{ .compatible = "arm,mali-400" },
 +	{ /* sentinel */ },
 +};
 +MODULE_DEVICE_TABLE(of, mali_dt_ids);
