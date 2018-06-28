@@ -13,7 +13,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 
 --- /dev/null
 +++ b/src/devicedrv/mali/platform/sunxi/sunxi.c
-@@ -0,0 +1,321 @@
+@@ -0,0 +1,328 @@
 +
 +#include <linux/clk.h>
 +#include <linux/clkdev.h>
@@ -48,6 +48,12 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +};
 +
 +struct mali *mali;
++
++static bool mali_has_reset_line(struct device_node *np)
++{
++	return of_device_is_compatible(np, "allwinner,sun4i-a10-mali") ||
++		of_device_is_compatible(np, "allwinner,sun7i-a20-mali"));
++}
 +
 +struct resource *mali_create_mp1_resources(unsigned long address,
 +					   int irq_gp, int irq_gpmmu,
@@ -154,8 +160,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	}
 +	clk_prepare_enable(mali->core_clk);
 +
-+	if (of_device_is_compatible(np, "allwinner,sun4i-a10-mali") ||
-+	    of_device_is_compatible(np, "allwinner,sun7i-a20-mali")) {
++	if (mali_has_reset_line(np)) {
 +		mali->reset = of_reset_control_get(np, NULL);
 +		if (IS_ERR(mali->reset)) {
 +			pr_err("Couldn't retrieve our reset handle\n");
