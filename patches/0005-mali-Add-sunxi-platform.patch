@@ -52,7 +52,8 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +static bool mali_has_reset_line(struct device_node *np)
 +{
 +	return of_device_is_compatible(np, "allwinner,sun4i-a10-mali") ||
-+		of_device_is_compatible(np, "allwinner,sun7i-a20-mali"));
++		of_device_is_compatible(np, "allwinner,sun7i-a20-mali") ||
++		of_device_is_compatible(np, "allwinner,sun8i-h3-mali");
 +}
 +
 +struct resource *mali_create_mp1_resources(unsigned long address,
@@ -106,6 +107,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +static const struct of_device_id mali_dt_ids[] = {
 +	{ .compatible = "allwinner,sun4i-a10-mali" },
 +	{ .compatible = "allwinner,sun7i-a20-mali" },
++	{ .compatible = "allwinner,sun8i-h3-mali" },
 +	{ .compatible = "arm,mali-400" },
 +	{ /* sentinel */ },
 +};
