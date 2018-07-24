@@ -1,5 +1,6 @@
 #!/bin/bash
 
+ARCH=arm
 RELEASE=r6p0
 JOBS=$(nproc)
 BUILD_OPTS="USING_UMP=0
@@ -37,7 +38,7 @@ unapply_patches() {
 build_driver() {
     local driver_dir=$(pwd)/$RELEASE/src/devicedrv/mali/
 
-    make JOBS=$JOBS $BUILD_OPTS -C $driver_dir
+    make ARCH=$ARCH JOBS=$JOBS $BUILD_OPTS -C $driver_dir
     if [ $? -ne 0 ]; then
 	    echo "Error building the driver"
 	    exit 1
@@ -49,16 +50,16 @@ build_driver() {
 install_driver() {
     local driver_dir=$(pwd)/$RELEASE/src/devicedrv/mali/
 
-    make JOBS=$JOBS $BUILD_OPTS -C $driver_dir install
+    make ARCH=$ARCH JOBS=$JOBS $BUILD_OPTS -C $driver_dir install
 }
 
 clean_driver() {
     local driver_dir=$(pwd)/$RELEASE/src/devicedrv/mali/
 
-    make JOBS=$JOBS $BUILD_OPTS -C $driver_dir clean
+    make ARCH=$ARCH JOBS=$JOBS $BUILD_OPTS -C $driver_dir clean
 }
 
-while getopts "j:r:aubcit" opt
+while getopts "jz:r:aubcit" opt
 do
     case $opt in
 	a)
@@ -100,6 +101,16 @@ do
 	    echo "Generating travis-ci YAML"
 	    cat travis-base.yml > .travis.yml
 	    ./travis.py >> .travis.yml
+	    ;;
+	z)
+	    case $OPTARG in
+		arm | arm64)
+		    ARCH=$OPTARG
+		    ;;
+		*)
+		    echo "Unsupported architecture"
+		    exit 1
+	    esac
 	    ;;
 	\?)
 	    echo "invalid option -$OPTARG"
