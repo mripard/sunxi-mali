@@ -35,7 +35,7 @@ before_script:
   - popd
 
 script:
-  - ./build.sh -r ${MALI_VERSION} -b
+  - ./build.sh -r ${MALI_VERSION} -z ${ARCH} -b
 
 matrix:
   include:
