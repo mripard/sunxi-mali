@@ -39,6 +39,17 @@ To override jobs number, use -j option as follows:
 ```
 Where 8 is the number of simultaneous jobs.
 
+Module is compiled using arm architecture by default.
+To override architecture, use -z option as follows:
+
+```
+./build.sh -r r6p2 -z arm64 -b
+```
+Where arm64 is the architecture chosen.
+Available architectures are:
+- arm
+- arm64(aarch64)
+
 ## Installing the user-space components
 
 Once the driver is compiled and loaded, you'll need to integrate the OpenGL ES
