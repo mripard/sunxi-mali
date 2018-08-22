@@ -31,6 +31,12 @@ export INSTALL_MOD_PATH=$TARGET_DIR
 It should install the mali.ko Linux kernel module into the target filesystem,
 and the module should be loaded automatically. If it isn't, modprobe will help.
 
+To compile for arm64(aarch64) platform, before issuing ./build.sh :
+
+```
+export ARCH=arm64
+```
+
 Module is compiled using parallel build by default.
 To override jobs number, use -j option as follows:
 
