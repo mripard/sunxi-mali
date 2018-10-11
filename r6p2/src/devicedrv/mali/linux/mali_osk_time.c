@@ -54,6 +54,6 @@ u64 _mali_osk_time_get_ns(void)
 u64 _mali_osk_boot_time_get_ns(void)
 {
 	struct timespec tsval;
-	getboottime(&tsval);
+	tsval = ktime_to_timespec(ktime_get_boottime());
 	return (u64)timespec_to_ns(&tsval);
 }
