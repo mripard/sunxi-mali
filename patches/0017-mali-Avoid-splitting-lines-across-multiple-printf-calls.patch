@@ -1,0 +1,57 @@
+mali: Avoid splitting lines across multiple printf calls
+
+Since Linux 4.9, KERN_CONT is mandatory for continued lines. In the
+absence of KERN_CONT, a newline may be implicitly inserted by the core
+printk code. However, KERN_CONT should only be used by core/arch code
+during early bootup as a continued line is not SMP-safe.
+
+Avoid all these issues altogether by not splitting lines across multiple
+calls.
+
+Signed-off-by: Jonathan Liu <net147@gmail.com>
+--- a/src/devicedrv/mali/common/mali_kernel_common.h
++++ b/src/devicedrv/mali/common/mali_kernel_common.h
+@@ -113,6 +113,9 @@
+ #define MALI_PRINTF(args) _mali_osk_dbgmsg args;
+ #endif
+ 
++#define MALI_UNPAREN(...) __VA_ARGS__
++#define MALI_PREFIX_PRINTF(prefix, args) MALI_PRINTF((prefix MALI_UNPAREN args))
++
+ #define MALI_PRINT_ERROR(args) do{ \
+ 		MALI_PRINTF(("Mali: ERR: %s\n" ,__FILE__)); \
+ 		MALI_PRINTF(("           %s()%4d\n           ", __FUNCTION__, __LINE__)) ; \
+@@ -120,10 +123,7 @@
+ 		MALI_PRINTF(("\n")); \
+ 	} while(0)
+ 
+-#define MALI_PRINT(args) do{ \
+-		MALI_PRINTF(("Mali: ")); \
+-		MALI_PRINTF(args); \
+-	} while (0)
++#define MALI_PRINT(args) MALI_PREFIX_PRINTF("Mali: ", args)
+ 
+ #ifdef DEBUG
+ #ifndef mali_debug_level
+@@ -133,18 +133,18 @@ extern int mali_debug_level;
+ #define MALI_DEBUG_CODE(code) code
+ #define MALI_DEBUG_PRINT(level, args)  do { \
+ 		if((level) <=  mali_debug_level)\
+-		{MALI_PRINTF(("Mali<" #level ">: ")); MALI_PRINTF(args); } \
++		{MALI_PREFIX_PRINTF("Mali<" #level ">: ", args); } \
+ 	} while (0)
+ 
+ #define MALI_DEBUG_PRINT_ERROR(args) MALI_PRINT_ERROR(args)
+ 
+ #define MALI_DEBUG_PRINT_IF(level,condition,args)  \
+ 	if((condition)&&((level) <=  mali_debug_level))\
+-	{MALI_PRINTF(("Mali<" #level ">: ")); MALI_PRINTF(args); }
++	{MALI_PREFIX_PRINTF("Mali<" #level ">: ", args); }
+ 
+ #define MALI_DEBUG_PRINT_ELSE(level, args)\
+ 	else if((level) <=  mali_debug_level)\
+-	{ MALI_PRINTF(("Mali<" #level ">: ")); MALI_PRINTF(args); }
++	{ MALI_PREFIX_PRINTF("Mali<" #level ">: ", args); }
+ 
+ /**
+  * @note these variants of DEBUG ASSERTS will cause a debugger breakpoint
