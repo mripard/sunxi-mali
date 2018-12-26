@@ -31,7 +31,18 @@ export INSTALL_MOD_PATH=$TARGET_DIR
 It should install the mali.ko Linux kernel module into the target filesystem,
 and the module should be loaded automatically. If it isn't, modprobe will help.
 
-Module is compiled using parallel build by default.
+The module is built in release mode by default. This is controlled by -m option 
+which is initially set to "release". To switch mode, use "debug" for both build 
+and install targets:
+
+```
+./build.sh -r r6p2 -m debug -b
+./build.sh -r r6p2 -m debug -i
+```
+The debug mode allows getting a verbose log out of the module. Use module parameter 
+"mali_debug_level" to set the desired verbosity level.
+
+The parallel build is used by default.
 To override jobs number, use -j option as follows:
 
 ```
