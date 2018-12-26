@@ -2,12 +2,8 @@
 
 RELEASE=r6p0
 JOBS=$(nproc)
-BUILD_OPTS="USING_UMP=0
-	    BUILD=release
-	    USING_PROFILING=0
-	    MALI_PLATFORM=sunxi
-	    USING_DVFS=1
-	    USING_DEVFREQ=1"
+BUILD_OPTS="USING_UMP=0 USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1"
+BUILD="release"
 
 apply_patches() {
     pushd $2
@@ -37,7 +33,7 @@ unapply_patches() {
 build_driver() {
     local driver_dir=$(pwd)/$RELEASE/src/devicedrv/mali/
 
-    make JOBS=$JOBS $BUILD_OPTS -C $driver_dir
+    make -C $driver_dir JOBS=$JOBS $BUILD_OPTS BUILD=$BUILD
     if [ $? -ne 0 ]; then
 	    echo "Error building the driver"
 	    exit 1
@@ -49,16 +45,16 @@ build_driver() {
 install_driver() {
     local driver_dir=$(pwd)/$RELEASE/src/devicedrv/mali/
 
-    make JOBS=$JOBS $BUILD_OPTS -C $driver_dir install
+    make -C $driver_dir install JOBS=$JOBS $BUILD_OPTS BUILD=$BUILD
 }
 
 clean_driver() {
     local driver_dir=$(pwd)/$RELEASE/src/devicedrv/mali/
 
-    make JOBS=$JOBS $BUILD_OPTS -C $driver_dir clean
+    make -C $driver_dir clean JOBS=$JOBS $BUILD_OPTS BUILD=$BUILD
 }
 
-while getopts "j:r:aubcit" opt
+while getopts "j:m:r:aubcit" opt
 do
     case $opt in
 	a)
@@ -81,6 +77,16 @@ do
 	    ;;
 	j)
 	    JOBS=$OPTARG
+	    ;;
+	m)
+	    case $OPTARG in
+		debug | release)
+		    BUILD=$OPTARG
+		    ;;
+		*)
+		    echo "Unsupported build mode"
+		    exit 1
+	    esac
 	    ;;
 	r)
 	    case $OPTARG in
