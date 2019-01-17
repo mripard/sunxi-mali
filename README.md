@@ -31,6 +31,12 @@ export INSTALL_MOD_PATH=$TARGET_DIR
 It should install the mali.ko Linux kernel module into the target filesystem,
 and the module should be loaded automatically. If it isn't, modprobe will help.
 
+To compile for arm64(aarch64) platform, before issuing ./build.sh :
+
+```
+export ARCH=arm64
+```
+
 Module is compiled using parallel build by default.
 To override jobs number, use -j option as follows:
 
@@ -45,12 +51,12 @@ Once the driver is compiled and loaded, you'll need to integrate the OpenGL ES
 implementation.
 
 In order to do that, you'll need to do the following commands (assuming you
-want the fbdev version over the X11-dma-buf one).
+want the r6p2 fbdev version over the X11-dma-buf one).
 
 ```
 git clone https://github.com/free-electrons/mali-blobs.git
 cd mali-blobs
-cp -a r6p2/fbdev/lib/lib_fb_dev/lib* $TARGET_DIR/usr/lib
+cp -a r6p2/arm/fbdev/lib* $TARGET_DIR/usr/lib
 ```
 
 ## fbdev quirks
