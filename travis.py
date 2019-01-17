@@ -28,7 +28,7 @@ def retrieve_versions():
         if major < 4:
             continue
 
-        if minor < 4:
+        if minor < 4 and major <= 4:
             continue
 
         versions.append(version)
