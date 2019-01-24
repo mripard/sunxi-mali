@@ -15,3 +15,4 @@ r6p2/0014-mali-Make-devfreq-optional.patch
 0015-Enable-parallel-building-passing-variable-to-Makefile.patch
 r6p2/0016-mali-support-building-against-4.16.patch
 0018-mali-support-building-against-4.20.patch
+0019-mali-support-building-against-5.0.patch

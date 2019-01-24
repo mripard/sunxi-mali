@@ -10,3 +10,4 @@ r6p2/0014-mali-Make-devfreq-optional.patch
 r6p2/0016-mali-support-building-against-4.16.patch
 r8p1/0017-mali-support-building-against-4.9-later.patch
 0018-mali-support-building-against-4.20.patch
+0019-mali-support-building-against-5.0.patch
