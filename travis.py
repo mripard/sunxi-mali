@@ -28,7 +28,7 @@ def retrieve_versions():
         if major < 4:
             continue
 
-        if minor < 4:
+        if minor < 4 and major <= 4:
             continue
 
         versions.append(version)
@@ -40,7 +40,7 @@ versions.reverse()
 
 print("matrix:")
 print("  include:")
-for release in ("r6p0", "r6p2", "r8p1", ):
+for release in ("r6p0", "r6p2", "r8p1", "r9p0" , ):
     for version in versions:
         for defconfig in ("multi_v7_defconfig", "sunxi_defconfig", ):
             print_test("arm", version, defconfig, release)

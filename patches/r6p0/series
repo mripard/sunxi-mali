@@ -12,3 +12,4 @@ r6p0/0011-mali-support-building-against-4.13.patch
 r6p0/0013-mali-support-building-against-4.15.patch
 0015-Enable-parallel-building-passing-variable-to-Makefile.patch
 0018-mali-support-building-against-4.20.patch
+0019-mali-support-building-against-5.0.patch
