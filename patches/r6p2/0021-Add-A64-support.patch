@@ -1,0 +1,26 @@
+--- a/src/devicedrv/mali/platform/sunxi/sunxi.c	2019-02-06 11:13:20.116079157 +0100
++++ b/src/devicedrv/mali/platform/sunxi/sunxi.c	2019-02-06 11:10:52.000000000 +0100
+@@ -38,6 +38,7 @@
+ 	return of_device_is_compatible(np, "allwinner,sun4i-a10-mali") ||
+ 		of_device_is_compatible(np, "allwinner,sun7i-a20-mali") ||
+ 		of_device_is_compatible(np, "allwinner,sun8i-h3-mali") ||
++		of_device_is_compatible(np, "allwinner,sun50i-a64-mali") ||
+ 		of_device_is_compatible(np, "allwinner,sun50i-h5-mali");
+ }
+ 
+@@ -123,6 +124,7 @@
+ 	{ .compatible = "allwinner,sun4i-a10-mali" },
+ 	{ .compatible = "allwinner,sun7i-a20-mali" },
+ 	{ .compatible = "allwinner,sun8i-h3-mali" },
++	{ .compatible = "allwinner,sun50i-a64-mali" },
+ 	{ .compatible = "allwinner,sun50i-h5-mali" },
+ 	{ /* sentinel */ },
+ };
+@@ -311,6 +313,7 @@
+ 	}
+ 
+ 	if (of_device_is_compatible(np, "allwinner,sun8i-h3-mali") ||
++	    of_device_is_compatible(np, "allwinner,sun50i-a64-mali")||
+ 	    of_device_is_compatible(np, "allwinner,sun50i-h5-mali"))
+ 		clk_set_rate(mali->core_clk, 576000000);
+ 	else if (of_device_is_compatible(np, "allwinner,sun7i-a20-mali") ||
