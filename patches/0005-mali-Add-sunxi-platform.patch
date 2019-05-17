@@ -6,6 +6,7 @@ Subject: [PATCH 4/4] mali: Add sunxi platform
 Add a platform for the Mali GPU integrated in the Allwinner SoCs.
 
 Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Signed-off-by: John-Eric Kamps <john-eric.kamps@honeywell.com>
 ---
  src/devicedrv/mali/platform/sunxi/sunxi.c | 333 +++++++++++++++++++++++
  1 file changed, 333 insertions(+)
@@ -13,7 +14,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 
 --- /dev/null
 +++ b/src/devicedrv/mali/platform/sunxi/sunxi.c
-@@ -0,0 +1,403 @@
+@@ -0,0 +1,406 @@
 +
 +#include <linux/clk.h>
 +#include <linux/clkdev.h>
@@ -54,6 +55,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	return of_device_is_compatible(np, "allwinner,sun4i-a10-mali") ||
 +		of_device_is_compatible(np, "allwinner,sun7i-a20-mali") ||
 +		of_device_is_compatible(np, "allwinner,sun8i-h3-mali") ||
++		of_device_is_compatible(np, "allwinner,sun50i-a64-mali") ||
 +		of_device_is_compatible(np, "allwinner,sun50i-h5-mali");
 +}
 +
@@ -139,6 +141,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	{ .compatible = "allwinner,sun4i-a10-mali" },
 +	{ .compatible = "allwinner,sun7i-a20-mali" },
 +	{ .compatible = "allwinner,sun8i-h3-mali" },
++	{ .compatible = "allwinner,sun50i-a64-mali" },
 +	{ .compatible = "allwinner,sun50i-h5-mali" },
 +	{ /* sentinel */ },
 +};
@@ -327,6 +330,7 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	}
 +
 +	if (of_device_is_compatible(np, "allwinner,sun8i-h3-mali") ||
++	    of_device_is_compatible(np, "allwinner,sun50i-a64-mali")||
 +	    of_device_is_compatible(np, "allwinner,sun50i-h5-mali"))
 +		clk_set_rate(mali->core_clk, 576000000);
 +	else if (of_device_is_compatible(np, "allwinner,sun7i-a20-mali") ||
