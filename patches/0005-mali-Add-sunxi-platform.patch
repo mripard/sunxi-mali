@@ -6,7 +6,6 @@ Subject: [PATCH 4/4] mali: Add sunxi platform
 Add a platform for the Mali GPU integrated in the Allwinner SoCs.
 
 Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-Signed-off-by: John-Eric Kamps <john-eric.kamps@honeywell.com>
 ---
  src/devicedrv/mali/platform/sunxi/sunxi.c | 333 +++++++++++++++++++++++
  1 file changed, 333 insertions(+)
