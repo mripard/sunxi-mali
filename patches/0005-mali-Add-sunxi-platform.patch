@@ -11,9 +11,11 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
  1 file changed, 333 insertions(+)
  create mode 100644 src/devicedrv/mali/platform/sunxi/sunxi.c
 
+Index: r6p2/src/devicedrv/mali/platform/sunxi/sunxi.c
+===================================================================
 --- /dev/null
-+++ b/src/devicedrv/mali/platform/sunxi/sunxi.c
-@@ -0,0 +1,406 @@
++++ r6p2/src/devicedrv/mali/platform/sunxi/sunxi.c
+@@ -0,0 +1,407 @@
 +
 +#include <linux/clk.h>
 +#include <linux/clkdev.h>
@@ -329,12 +331,13 @@ Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 +	}
 +
 +	if (of_device_is_compatible(np, "allwinner,sun8i-h3-mali") ||
-+	    of_device_is_compatible(np, "allwinner,sun50i-a64-mali")||
 +	    of_device_is_compatible(np, "allwinner,sun50i-h5-mali"))
 +		clk_set_rate(mali->core_clk, 576000000);
 +	else if (of_device_is_compatible(np, "allwinner,sun7i-a20-mali") ||
 +		 of_device_is_compatible(np, "allwinner,sun8i-a23-mali"))
 +		clk_set_rate(mali->core_clk, 384000000);
++	else if (of_device_is_compatible(np, "allwinner,sun50i-a64-mali"))
++		clk_set_rate(mali->core_clk, 432000000);
 +
 +	clk_register_clkdev(mali->core_clk, "clk_mali", NULL);
 +
