@@ -1,0 +1,20 @@
+name: Update Travis File
+
+on:
+  schedule:
+    - cron: "00 00 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Update Travis File
+      run: ./build.sh -t
+    - name: Push our changes
+      uses: github-actions-x/commit@v2.3
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: 'Update Travis File with newest Linux releases'
+        files: .travis.yml
