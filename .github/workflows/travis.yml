@@ -19,8 +19,12 @@ jobs:
     - name: Update Travis File
       run: ./build.sh -t
     - name: Push our changes
-      uses: github-actions-x/commit@v2.3
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        commit-message: 'Update Travis File with newest Linux releases'
-        files: .travis.yml
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        COMMIT_MSG: "Update Travis File with newest Linux releases"
+      run: |
+        git config user.name "Maxime Ripard"
+        git config user.mail "mripard@kernel.org"
+        git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+        git add .travis.yml
+        git diff --quiet && git diff --staged --quiet || (git commit -m "${COMMIT_MSG}"; git push origin master)
