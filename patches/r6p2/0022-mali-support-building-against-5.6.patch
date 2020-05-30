@@ -1,0 +1,76 @@
+mali: Support building against 5.6
+
+Linux 5.6 removed ioremap_nocache which is an alias of ioremap since Linux 2.6,
+struct timespec, getnstimeofday and timespec_to_ns.
+
+Signed-off-by: Jonathan Liu <net147@gmail.com>
+
+--- a/src/devicedrv/mali/linux/mali_memory_cow.c
++++ b/src/devicedrv/mali/linux/mali_memory_cow.c
+@@ -683,7 +683,7 @@ void _mali_mem_cow_copy_page(mali_page_node *src_node, mali_page_node *dst_node)
+ 		/*
+ 		* use ioremap to map src for BLOCK memory
+ 		*/
+-		src = ioremap_nocache(_mali_page_node_get_dma_addr(src_node), _MALI_OSK_MALI_PAGE_SIZE);
++		src = ioremap(_mali_page_node_get_dma_addr(src_node), _MALI_OSK_MALI_PAGE_SIZE);
+ 		memcpy(dst, src , _MALI_OSK_MALI_PAGE_SIZE);
+ 		iounmap(src);
+ 	}
+--- a/src/devicedrv/mali/linux/mali_osk_low_level_mem.c
++++ b/src/devicedrv/mali/linux/mali_osk_low_level_mem.c
+@@ -33,7 +33,7 @@ void _mali_osk_write_mem_barrier(void)
+ 
+ mali_io_address _mali_osk_mem_mapioregion(uintptr_t phys, u32 size, const char *description)
+ {
+-	return (mali_io_address)ioremap_nocache(phys, size);
++	return (mali_io_address)ioremap(phys, size);
+ }
+ 
+ void _mali_osk_mem_unmapioregion(uintptr_t phys, u32 size, mali_io_address virt)
+--- a/src/devicedrv/mali/linux/mali_osk_time.c
++++ b/src/devicedrv/mali/linux/mali_osk_time.c
+@@ -46,9 +46,15 @@ void _mali_osk_time_ubusydelay(u32 usecs)
+ 
+ u64 _mali_osk_time_get_ns(void)
+ {
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 6, 0)
++	struct timespec64 tsval;
++	ktime_get_real_ts64(&tsval);
++	return (u64)timespec64_to_ns(&tsval);
++#else
+ 	struct timespec tsval;
+ 	getnstimeofday(&tsval);
+ 	return (u64)timespec_to_ns(&tsval);
++#endif
+ }
+ 
+ u64 _mali_osk_boot_time_get_ns(void)
+--- a/src/devicedrv/mali/platform/arm/arm.c
++++ b/src/devicedrv/mali/platform/arm/arm.c
+@@ -96,7 +96,7 @@ static int mali_secure_mode_init_juno(void)
+ 
+ 	MALI_DEBUG_ASSERT(NULL == secure_mode_mapped_addr);
+ 
+-	secure_mode_mapped_addr = ioremap_nocache(phys_addr_page, map_size);
++	secure_mode_mapped_addr = ioremap(phys_addr_page, map_size);
+ 	if (NULL != secure_mode_mapped_addr) {
+ 		return mali_gpu_reset_and_secure_mode_disable_juno();
+ 	}
+@@ -574,7 +574,7 @@ static u32 mali_read_phys(u32 phys_addr)
+ 	u32 phys_offset    = phys_addr & 0x00001FFF;
+ 	u32 map_size       = phys_offset + sizeof(u32);
+ 	u32 ret = 0xDEADBEEF;
+-	void *mem_mapped = ioremap_nocache(phys_addr_page, map_size);
++	void *mem_mapped = ioremap(phys_addr_page, map_size);
+ 	if (NULL != mem_mapped) {
+ 		ret = (u32)ioread32(((u8 *)mem_mapped) + phys_offset);
+ 		iounmap(mem_mapped);
+@@ -589,7 +589,7 @@ static void mali_write_phys(u32 phys_addr, u32 value)
+ 	u32 phys_addr_page = phys_addr & 0xFFFFE000;
+ 	u32 phys_offset    = phys_addr & 0x00001FFF;
+ 	u32 map_size       = phys_offset + sizeof(u32);
+-	void *mem_mapped = ioremap_nocache(phys_addr_page, map_size);
++	void *mem_mapped = ioremap(phys_addr_page, map_size);
+ 	if (NULL != mem_mapped) {
+ 		iowrite32(value, ((u8 *)mem_mapped) + phys_offset);
+ 		iounmap(mem_mapped);
