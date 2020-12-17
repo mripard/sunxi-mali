@@ -1,0 +1,76 @@
+From 44dbb7d2036ba41d5db46fadb86e0461fce0948f Mon Sep 17 00:00:00 2001
+From: Giulio Benetti <giulio.benetti@benettiengineering.com>
+Date: Thu, 17 Dec 2020 02:26:49 +0100
+Subject: [PATCH] mali: support building against 5.9
+
+Starting from Linux version 5.9.0 HAVE_UNLOCKED_IOCTL macro has been
+removed making actual code to use .ioctl struct member resulting in a
+build failure, so let's declare locally such macro if Linux
+version >= 5.9.0.
+
+Starting from Linux version 5.9.0 also part of <asm/uaccess.h> has been
+moved to <linux/uaccess.h> so let's include <linux/uaccess.h> if Linux
+version >= 5.9.0.
+
+Signed-off-by: Giulio Benetti <giulio.benetti@benettiengineering.com>
+---
+ src/devicedrv/mali/linux/mali_kernel_linux.c | 7 +++++++
+ src/devicedrv/mali/linux/mali_osk_mali.c     | 5 +++++
+ src/devicedrv/mali/linux/mali_osk_misc.c     | 5 +++++
+ 3 files changed, 17 insertions(+)
+
+diff --git a/src/devicedrv/mali/linux/mali_kernel_linux.c b/src/devicedrv/mali/linux/mali_kernel_linux.c
+index 34cb3d7..c098c77 100755
+--- a/src/devicedrv/mali/linux/mali_kernel_linux.c
++++ b/src/devicedrv/mali/linux/mali_kernel_linux.c
+@@ -63,6 +63,13 @@ EXPORT_TRACEPOINT_SYMBOL_GPL(mali_hw_counter);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(mali_sw_counters);
+ #endif /* CONFIG_TRACEPOINTS */
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
++/* From Linux version 5.9.0 HAVE_UNLOCKED_IOCTL has been removed
++ * so let's reintroduce it here.
++ */
++#define HAVE_UNLOCKED_IOCTL
++#endif
++
+ /* from the __malidrv_build_info.c file that is generated during build */
+ extern const char *__malidrv_build_info(void);
+ 
+diff --git a/src/devicedrv/mali/linux/mali_osk_mali.c b/src/devicedrv/mali/linux/mali_osk_mali.c
+index ee82b6e..1491d10 100755
+--- a/src/devicedrv/mali/linux/mali_osk_mali.c
++++ b/src/devicedrv/mali/linux/mali_osk_mali.c
+@@ -13,7 +13,12 @@
+  * Implementation of the OS abstraction layer which is specific for the Mali kernel device driver
+  */
+ #include <linux/kernel.h>
++#include <linux/version.h>
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
++#include <linux/uaccess.h>
++#else
+ #include <asm/uaccess.h>
++#endif
+ #include <linux/platform_device.h>
+ #include <linux/mali/mali_utgard.h>
+ #include <linux/of.h>
+diff --git a/src/devicedrv/mali/linux/mali_osk_misc.c b/src/devicedrv/mali/linux/mali_osk_misc.c
+index 0a619e3..87ff192 100755
+--- a/src/devicedrv/mali/linux/mali_osk_misc.c
++++ b/src/devicedrv/mali/linux/mali_osk_misc.c
+@@ -13,7 +13,12 @@
+  * Implementation of the OS abstraction layer for the kernel device driver
+  */
+ #include <linux/kernel.h>
++#include <linux/version.h>
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
++#include <linux/uaccess.h>
++#else
+ #include <asm/uaccess.h>
++#endif
+ #include <asm/cacheflush.h>
+ #include <linux/sched.h>
+ #include <linux/seq_file.h>
+-- 
+2.25.1
+
