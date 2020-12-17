@@ -74,5 +74,10 @@ you to change that, you'll need to change either the
 parameter to 100 times the number of simultaneous buffers you want to use (so
 200 for double buffering, 300 for triple buffering, etc.).
 
+Linux also introduced with the 4.20 some memory protection mechanisms that
+breaks the user-space components. You'll need to enable
+`CONFIG_DRM_FBDEV_LEAK_PHYS_SMEM`, and pass
+`drm_kms_helper.drm_leak_fbdev_smem=1' on the kernel command-line.
+
 To avoid screen tearing, set the `FRONTBUFFER_LOCKING` environment variable to 1.
 This environment variable is used only by the Mali fbdev blob.
