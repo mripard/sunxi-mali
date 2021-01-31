@@ -1,0 +1,36 @@
+From f760b79bc15557a13d9bb68a9a3fb9c8e08dfbae Mon Sep 17 00:00:00 2001
+From: Giulio Benetti <giulio.benetti@benettiengineering.com>
+Date: Thu, 17 Dec 2020 16:41:49 +0100
+Subject: [PATCH] mali: support building against 5.9
+
+Starting from Linux version 5.9.0 HAVE_UNLOCKED_IOCTL macro has been
+removed making actual code to use .ioctl struct member resulting in a
+build failure, so let's declare locally such macro if Linux
+version >= 5.9.0.
+
+Signed-off-by: Giulio Benetti <giulio.benetti@benettiengineering.com>
+---
+ src/devicedrv/mali/linux/mali_kernel_linux.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/src/devicedrv/mali/linux/mali_kernel_linux.c b/src/devicedrv/mali/linux/mali_kernel_linux.c
+index d7893a3..9005466 100644
+--- a/src/devicedrv/mali/linux/mali_kernel_linux.c
++++ b/src/devicedrv/mali/linux/mali_kernel_linux.c
+@@ -65,6 +65,13 @@ EXPORT_TRACEPOINT_SYMBOL_GPL(mali_hw_counter);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(mali_sw_counters);
+ #endif /* CONFIG_TRACEPOINTS */
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
++/* From Linux version 5.9.0 HAVE_UNLOCKED_IOCTL has been removed
++ * so let's reintroduce it here.
++ */
++#define HAVE_UNLOCKED_IOCTL
++#endif
++
+ #ifdef CONFIG_MALI_DEVFREQ
+ #include "mali_devfreq.h"
+ #include "mali_osk_mali.h"
+-- 
+2.25.1
+
