@@ -42,92 +42,92 @@ matrix:
   include:
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.4.271
+        KERNEL_VERSION: 4.4.272
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.4.271
+        KERNEL_VERSION: 4.4.272
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r6p0
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 4.4.271
+        KERNEL_VERSION: 4.4.272
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r6p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.9.271
+        KERNEL_VERSION: 4.9.272
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.9.271
+        KERNEL_VERSION: 4.9.272
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r6p0
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 4.9.271
+        KERNEL_VERSION: 4.9.272
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r6p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.14.235
+        KERNEL_VERSION: 4.14.236
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.14.235
+        KERNEL_VERSION: 4.14.236
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r6p0
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 4.14.235
+        KERNEL_VERSION: 4.14.236
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r6p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.19.193
+        KERNEL_VERSION: 4.19.194
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.19.193
+        KERNEL_VERSION: 4.19.194
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r6p0
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 4.19.193
+        KERNEL_VERSION: 4.19.194
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r6p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.4.124
+        KERNEL_VERSION: 5.4.125
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.4.124
+        KERNEL_VERSION: 5.4.125
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r6p0
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 5.4.124
+        KERNEL_VERSION: 5.4.125
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r6p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.10.42
+        KERNEL_VERSION: 5.10.43
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.10.42
+        KERNEL_VERSION: 5.10.43
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r6p0
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 5.10.42
+        KERNEL_VERSION: 5.10.43
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r6p0
     - env:
@@ -147,17 +147,17 @@ matrix:
         MALI_VERSION: r6p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.12.9
+        KERNEL_VERSION: 5.12.10
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.12.9
+        KERNEL_VERSION: 5.12.10
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r6p0
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 5.12.9
+        KERNEL_VERSION: 5.12.10
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r6p0
     - env:
@@ -177,92 +177,92 @@ matrix:
         MALI_VERSION: r6p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.4.271
+        KERNEL_VERSION: 4.4.272
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p2
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.4.271
+        KERNEL_VERSION: 4.4.272
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r6p2
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 4.4.271
+        KERNEL_VERSION: 4.4.272
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r6p2
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.9.271
+        KERNEL_VERSION: 4.9.272
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p2
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.9.271
+        KERNEL_VERSION: 4.9.272
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r6p2
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 4.9.271
+        KERNEL_VERSION: 4.9.272
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r6p2
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.14.235
+        KERNEL_VERSION: 4.14.236
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p2
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.14.235
+        KERNEL_VERSION: 4.14.236
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r6p2
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 4.14.235
+        KERNEL_VERSION: 4.14.236
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r6p2
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.19.193
+        KERNEL_VERSION: 4.19.194
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p2
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.19.193
+        KERNEL_VERSION: 4.19.194
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r6p2
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 4.19.193
+        KERNEL_VERSION: 4.19.194
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r6p2
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.4.124
+        KERNEL_VERSION: 5.4.125
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p2
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.4.124
+        KERNEL_VERSION: 5.4.125
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r6p2
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 5.4.124
+        KERNEL_VERSION: 5.4.125
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r6p2
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.10.42
+        KERNEL_VERSION: 5.10.43
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p2
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.10.42
+        KERNEL_VERSION: 5.10.43
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r6p2
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 5.10.42
+        KERNEL_VERSION: 5.10.43
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r6p2
     - env:
@@ -282,17 +282,17 @@ matrix:
         MALI_VERSION: r6p2
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.12.9
+        KERNEL_VERSION: 5.12.10
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r6p2
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.12.9
+        KERNEL_VERSION: 5.12.10
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r6p2
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 5.12.9
+        KERNEL_VERSION: 5.12.10
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r6p2
     - env:
@@ -312,92 +312,92 @@ matrix:
         MALI_VERSION: r6p2
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.4.271
+        KERNEL_VERSION: 4.4.272
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r8p1
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.4.271
+        KERNEL_VERSION: 4.4.272
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r8p1
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 4.4.271
+        KERNEL_VERSION: 4.4.272
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r8p1
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.9.271
+        KERNEL_VERSION: 4.9.272
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r8p1
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.9.271
+        KERNEL_VERSION: 4.9.272
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r8p1
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 4.9.271
+        KERNEL_VERSION: 4.9.272
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r8p1
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.14.235
+        KERNEL_VERSION: 4.14.236
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r8p1
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.14.235
+        KERNEL_VERSION: 4.14.236
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r8p1
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 4.14.235
+        KERNEL_VERSION: 4.14.236
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r8p1
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.19.193
+        KERNEL_VERSION: 4.19.194
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r8p1
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.19.193
+        KERNEL_VERSION: 4.19.194
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r8p1
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 4.19.193
+        KERNEL_VERSION: 4.19.194
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r8p1
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.4.124
+        KERNEL_VERSION: 5.4.125
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r8p1
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.4.124
+        KERNEL_VERSION: 5.4.125
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r8p1
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 5.4.124
+        KERNEL_VERSION: 5.4.125
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r8p1
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.10.42
+        KERNEL_VERSION: 5.10.43
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r8p1
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.10.42
+        KERNEL_VERSION: 5.10.43
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r8p1
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 5.10.42
+        KERNEL_VERSION: 5.10.43
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r8p1
     - env:
@@ -417,17 +417,17 @@ matrix:
         MALI_VERSION: r8p1
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.12.9
+        KERNEL_VERSION: 5.12.10
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r8p1
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.12.9
+        KERNEL_VERSION: 5.12.10
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r8p1
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 5.12.9
+        KERNEL_VERSION: 5.12.10
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r8p1
     - env:
@@ -447,92 +447,92 @@ matrix:
         MALI_VERSION: r8p1
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.4.271
+        KERNEL_VERSION: 4.4.272
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r9p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.4.271
+        KERNEL_VERSION: 4.4.272
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r9p0
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 4.4.271
+        KERNEL_VERSION: 4.4.272
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r9p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.9.271
+        KERNEL_VERSION: 4.9.272
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r9p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.9.271
+        KERNEL_VERSION: 4.9.272
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r9p0
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 4.9.271
+        KERNEL_VERSION: 4.9.272
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r9p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.14.235
+        KERNEL_VERSION: 4.14.236
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r9p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.14.235
+        KERNEL_VERSION: 4.14.236
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r9p0
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 4.14.235
+        KERNEL_VERSION: 4.14.236
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r9p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.19.193
+        KERNEL_VERSION: 4.19.194
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r9p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 4.19.193
+        KERNEL_VERSION: 4.19.194
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r9p0
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 4.19.193
+        KERNEL_VERSION: 4.19.194
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r9p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.4.124
+        KERNEL_VERSION: 5.4.125
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r9p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.4.124
+        KERNEL_VERSION: 5.4.125
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r9p0
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 5.4.124
+        KERNEL_VERSION: 5.4.125
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r9p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.10.42
+        KERNEL_VERSION: 5.10.43
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r9p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.10.42
+        KERNEL_VERSION: 5.10.43
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r9p0
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 5.10.42
+        KERNEL_VERSION: 5.10.43
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r9p0
     - env:
@@ -552,17 +552,17 @@ matrix:
         MALI_VERSION: r9p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.12.9
+        KERNEL_VERSION: 5.12.10
         KERNEL_DEFCONFIG: multi_v7_defconfig
         MALI_VERSION: r9p0
     - env:
       - ARCH: arm
-        KERNEL_VERSION: 5.12.9
+        KERNEL_VERSION: 5.12.10
         KERNEL_DEFCONFIG: sunxi_defconfig
         MALI_VERSION: r9p0
     - env:
       - ARCH: arm64
-        KERNEL_VERSION: 5.12.9
+        KERNEL_VERSION: 5.12.10
         KERNEL_DEFCONFIG: defconfig
         MALI_VERSION: r9p0
     - env:
