@@ -46,6 +46,21 @@ build_driver() {
     cp $driver_dir/mali.ko .
 }
 
+embed_driver() {
+    local driver_dir=$(pwd)/$RELEASE/src/devicedrv/mali/
+    local kernel_driver_dir=$KDIR/drivers/gpu/drm/mali/
+    local Kconfig_append='source "drivers/gpu/drm/mali/Kconfig"'
+    local Makefile_append="obj-y += mali/"
+
+    rm -rf $kernel_driver_dir/*
+    mkdir -p $kernel_driver_dir
+
+    cp -r $driver_dir/* $kernel_driver_dir
+
+    fgrep -q "$Kconfig_append" $kernel_driver_dir../Kconfig || echo -e "\n$Kconfig_append" >> $kernel_driver_dir../Kconfig
+    fgrep -q "$Makefile_append" $kernel_driver_dir../Makefile || echo $Makefile_append >> $kernel_driver_dir../Makefile
+}
+
 install_driver() {
     local driver_dir=$(pwd)/$RELEASE/src/devicedrv/mali/
 
@@ -58,7 +73,7 @@ clean_driver() {
     make JOBS=$JOBS $BUILD_OPTS -C $driver_dir clean
 }
 
-while getopts "j:r:aubcit" opt
+while getopts "j:r:aubcite" opt
 do
     case $opt in
 	a)
@@ -74,6 +89,11 @@ do
 	    echo "cleaning..."
 	    unapply_patches $(pwd)/patches $RELEASE
 	    clean_driver $RELEASE
+	    ;;
+	e)
+	    echo "embedding into the kernel..."
+	    apply_patches $(pwd)/patches $RELEASE
+	    embed_driver $RELEASE
 	    ;;
 	i)
 	    echo "installing..."
