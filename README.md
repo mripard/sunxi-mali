@@ -81,5 +81,14 @@ breaks the user-space components. You'll need to enable
 `CONFIG_DRM_FBDEV_LEAK_PHYS_SMEM`, and pass
 `drm_kms_helper.drm_leak_fbdev_smem=1' on the kernel command-line.
 
+Also CMA size must be set at least to 256M to correctly work, otherwise
+sunxi-mali will show a blank display.
+To do this you have 2 choices:
+1) set CONFIG_CMA_SIZE_MBYTES/CONFIG_CMA_SIZE_PERCENTAGE to match 256M
+2) pass `cma=256M` on the kernel command-line
+
+If both are not specified and CONFIG_CMA is enabled, CONFIG_CMA_SIZE_MBYTES will
+default to 16M that is too few to allow sunxi-mali to work.
+
 To avoid screen tearing, set the `FRONTBUFFER_LOCKING` environment variable to 1.
 This environment variable is used only by the Mali fbdev blob.
