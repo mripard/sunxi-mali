@@ -1,5 +1,7 @@
 # Mali support for Allwinner / sunXi platform for mainline Linux
 
+⚠️**This driver is now deprecated in favor of** [Lima](https://docs.mesa3d.org/drivers/lima.html)⚠️
+
 Here is the driver needed in order to support ARM's Mali GPU found on the Allwinner
 SoC, using a mainline (ie. Torvalds') kernel.
 
